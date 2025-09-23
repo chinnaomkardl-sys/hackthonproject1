@@ -1,0 +1,150 @@
+import React, { useState } from 'react';
+import { Send, QrCode, Smartphone, CreditCard, Eye, EyeOff, RefreshCw, Plus, ArrowRight } from 'lucide-react';
+
+interface DashboardProps {
+  onSendMoney: (recipient: string, amount: number) => boolean;
+  onNavigate: (view: string) => void;
+  onViewPersonHistory: (personName: string) => void;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ onSendMoney, onNavigate, onViewPersonHistory }) => {
+  const [balance, setBalance] = useState(25420.50);
+  const [showBalance, setShowBalance] = useState(true);
+
+  const handleReload = () => {
+    // Simulate balance reload
+    const reloadAmount = Math.floor(Math.random() * 5000) + 1000;
+    setBalance(prev => prev + reloadAmount);
+    // Show success message (you can add a toast notification here)
+    alert(`₹${reloadAmount} added to your account!`);
+  };
+
+  const recentTransactions = [
+    { name: 'John Doe', amount: -2500, type: 'sent', time: '2 hours ago', avatar: 'JD' },
+    { name: 'Alice Smith', amount: 1200, type: 'received', time: '1 day ago', avatar: 'AS' },
+    { name: 'Bob Wilson', amount: -850, type: 'sent', time: '2 days ago', avatar: 'BW' },
+    { name: 'Carol Brown', amount: 3200, type: 'received', time: '3 days ago', avatar: 'CB' },
+    { name: 'David Lee', amount: -1500, type: 'sent', time: '4 days ago', avatar: 'DL' }
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Balance Card */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-blue-100 text-sm">Available Balance</p>
+            <div className="flex items-center space-x-3 mt-1">
+              <h2 className="text-3xl font-bold">
+                {showBalance ? `₹${balance.toLocaleString('en-IN')}` : '₹ ••••••'}
+              </h2>
+              <button
+                onClick={() => setShowBalance(!showBalance)}
+                className="p-1 hover:bg-blue-500 rounded transition-colors"
+              >
+                {showBalance ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+          <div className="flex space-x-2">
+            <button 
+              onClick={handleReload}
+              className="bg-blue-500 hover:bg-blue-400 p-2 rounded-lg transition-colors"
+              title="Add Money"
+            >
+              <Plus className="h-5 w-5" />
+            </button>
+            <button 
+              onClick={handleReload}
+              className="bg-blue-500 hover:bg-blue-400 p-2 rounded-lg transition-colors"
+              title="Refresh Balance"
+            >
+              <RefreshCw className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-3 gap-4">
+        <button 
+          onClick={() => onNavigate('send-money')}
+          className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-200"
+        >
+          <div className="text-center">
+            <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+              <Send className="h-6 w-6 text-green-600" />
+            </div>
+            <p className="text-sm font-semibold text-gray-900">Send Money</p>
+          </div>
+        </button>
+        
+        <button 
+          onClick={() => onNavigate('scan-qr')}
+          className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-200"
+        >
+          <div className="text-center">
+            <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+              <QrCode className="h-6 w-6 text-blue-600" />
+            </div>
+            <p className="text-sm font-semibold text-gray-900">Scan QR</p>
+          </div>
+        </button>
+        
+        <button 
+          onClick={() => onNavigate('pay-bills')}
+          className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-200"
+        >
+          <div className="text-center">
+            <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+              <CreditCard className="h-6 w-6 text-purple-600" />
+            </div>
+            <p className="text-sm font-semibold text-gray-900">Pay Bills</p>
+          </div>
+        </button>
+      </div>
+
+      {/* Recent Transactions Preview */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Recent Transactions</h3>
+          <button className="text-blue-600 text-sm font-medium hover:text-blue-700">View All</button>
+        </div>
+        
+        <div className="space-y-3">
+          {recentTransactions.slice(0, 3).map((transaction, index) => (
+            <button
+              key={index}
+              onClick={() => onViewPersonHistory(transaction.name)}
+              className="w-full flex items-center justify-between py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 rounded-lg px-2 transition-colors"
+            >
+              <div className="flex items-center space-x-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  transaction.type === 'sent' ? 'bg-red-100' : 'bg-green-100'
+                }`}>
+                  <span className="text-sm font-semibold text-gray-700">
+                    {transaction.avatar}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">{transaction.name}</p>
+                  <p className="text-sm text-gray-500">{transaction.time}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className={`font-semibold ${
+                  transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {transaction.amount > 0 ? '+' : ''}₹{Math.abs(transaction.amount)}
+                </div>
+                <ArrowRight className="h-4 w-4 text-gray-400" />
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
