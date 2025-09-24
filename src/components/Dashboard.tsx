@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
-import { Send, QrCode, Smartphone, CreditCard, Eye, EyeOff, RefreshCw, Plus, ArrowRight } from 'lucide-react';
+import { Send, QrCode, CreditCard, Plus, ArrowRight, Wallet, Star } from 'lucide-react';
 
 interface DashboardProps {
   onSendMoney: (recipient: string, amount: number) => boolean;
   onNavigate: (view: string) => void;
   onViewPersonHistory: (personName: string) => void;
+  onNavigateToScoreTab: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onSendMoney, onNavigate, onViewPersonHistory }) => {
-  const [balance, setBalance] = useState(25420.50);
-  const [showBalance, setShowBalance] = useState(true);
+const Dashboard: React.FC<DashboardProps> = ({ onSendMoney, onNavigate, onViewPersonHistory, onNavigateToScoreTab }) => {
+  const [balance] = useState(25420.50);
+  const userTrustScore = 78;
 
-  const handleReload = () => {
-    // Simulate balance reload
+  const handleAddMoney = () => {
     const reloadAmount = Math.floor(Math.random() * 5000) + 1000;
-    setBalance(prev => prev + reloadAmount);
-    // Show success message (you can add a toast notification here)
-    alert(`₹${reloadAmount} added to your account!`);
+    alert(`This is a demo. A real app would initiate adding money. Mock amount: ₹${reloadAmount.toFixed(2)}`);
+  };
+
+  const handleCheckBalance = () => {
+    alert(`Your available balance is: ₹${balance.toLocaleString('en-IN')}`);
   };
 
   const recentTransactions = [
@@ -28,79 +30,77 @@ const Dashboard: React.FC<DashboardProps> = ({ onSendMoney, onNavigate, onViewPe
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Balance Card */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
-        <div className="flex justify-between items-start">
+    <div className="space-y-8">
+      {/* Trust Score Card */}
+      <div className="bg-blue-600 rounded-2xl p-5 text-white shadow-lg">
+        <div className="flex justify-between items-center">
           <div>
-            <p className="text-blue-100 text-sm">Available Balance</p>
-            <div className="flex items-center space-x-3 mt-1">
-              <h2 className="text-3xl font-bold">
-                {showBalance ? `₹${balance.toLocaleString('en-IN')}` : '₹ ••••••'}
+            <p className="text-blue-200 text-sm">Trust Score</p>
+            <div className="flex items-center space-x-2 mt-1">
+              <Star className="h-7 w-7 text-yellow-300" />
+              <h2 className="text-3xl font-bold text-yellow-300">
+                {userTrustScore} / 100
               </h2>
-              <button
-                onClick={() => setShowBalance(!showBalance)}
-                className="p-1 hover:bg-blue-500 rounded transition-colors"
-              >
-                {showBalance ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
             </div>
           </div>
-          <div className="flex space-x-2">
-            <button 
-              onClick={handleReload}
-              className="bg-blue-500 hover:bg-blue-400 p-2 rounded-lg transition-colors"
-              title="Add Money"
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={onNavigateToScoreTab}
+              className="bg-blue-500 hover:bg-blue-400 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
             >
-              <Plus className="h-5 w-5" />
+              View Details
             </button>
-            <button 
-              onClick={handleReload}
-              className="bg-blue-500 hover:bg-blue-400 p-2 rounded-lg transition-colors"
-              title="Refresh Balance"
+            <button
+              onClick={handleAddMoney}
+              className="bg-blue-500 hover:bg-blue-400 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center space-x-2"
             >
-              <RefreshCw className="h-5 w-5" />
+              <Plus className="h-4 w-4" />
+              <span>Add Money</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <button 
           onClick={() => onNavigate('send-money')}
-          className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-200"
+          className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-200 flex flex-col items-center justify-center space-y-2"
         >
-          <div className="text-center">
-            <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
-              <Send className="h-6 w-6 text-green-600" />
-            </div>
-            <p className="text-sm font-semibold text-gray-900">Send Money</p>
+          <div className="bg-green-100 w-14 h-14 rounded-full flex items-center justify-center">
+            <Send className="h-6 w-6 text-green-600" />
           </div>
+          <p className="text-sm font-semibold text-gray-900">Send Money</p>
         </button>
         
         <button 
           onClick={() => onNavigate('scan-qr')}
-          className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-200"
+          className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-200 flex flex-col items-center justify-center space-y-2"
         >
-          <div className="text-center">
-            <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
-              <QrCode className="h-6 w-6 text-blue-600" />
-            </div>
-            <p className="text-sm font-semibold text-gray-900">Scan QR</p>
+          <div className="bg-blue-100 w-14 h-14 rounded-full flex items-center justify-center">
+            <QrCode className="h-6 w-6 text-blue-600" />
           </div>
+          <p className="text-sm font-semibold text-gray-900">Scan QR</p>
         </button>
         
         <button 
           onClick={() => onNavigate('pay-bills')}
-          className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-200"
+          className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-200 flex flex-col items-center justify-center space-y-2"
         >
-          <div className="text-center">
-            <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
-              <CreditCard className="h-6 w-6 text-purple-600" />
-            </div>
-            <p className="text-sm font-semibold text-gray-900">Pay Bills</p>
+          <div className="bg-purple-100 w-14 h-14 rounded-full flex items-center justify-center">
+            <CreditCard className="h-6 w-6 text-purple-600" />
           </div>
+          <p className="text-sm font-semibold text-gray-900">Pay Bills</p>
+        </button>
+
+        <button 
+          onClick={handleCheckBalance}
+          className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-200 flex flex-col items-center justify-center space-y-2"
+        >
+          <div className="bg-indigo-100 w-14 h-14 rounded-full flex items-center justify-center">
+            <Wallet className="h-6 w-6 text-indigo-600" />
+          </div>
+          <p className="text-sm font-semibold text-gray-900">Check Balance</p>
         </button>
       </div>
 
@@ -108,7 +108,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onSendMoney, onNavigate, onViewPe
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Recent Transactions</h3>
-          <button className="text-blue-600 text-sm font-medium hover:text-blue-700">View All</button>
+          <button onClick={() => alert('Navigating to all transactions...')} className="text-blue-600 text-sm font-medium hover:text-blue-700">View All</button>
         </div>
         
         <div className="space-y-3">

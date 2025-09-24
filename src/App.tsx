@@ -56,6 +56,7 @@ function App() {
               onSendMoney={handleSendMoney} 
               onNavigate={setCurrentView}
               onViewPersonHistory={handleViewPersonHistory}
+              onNavigateToScoreTab={() => setActiveTab('score')}
             />;
         }
       case 'history':
@@ -71,12 +72,13 @@ function App() {
           onSendMoney={handleSendMoney} 
           onNavigate={setCurrentView}
           onViewPersonHistory={handleViewPersonHistory}
+          onNavigateToScoreTab={() => setActiveTab('score')}
         />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-rose-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

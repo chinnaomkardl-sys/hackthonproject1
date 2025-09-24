@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, User, Calendar, FileText, Send, Shield, Search, Phone, MapPin, CreditCard, Clock } from 'lucide-react';
+import { AlertTriangle, User, Calendar, FileText, Send, Shield, Search, Phone, MapPin, CreditCard, Clock, X, Paperclip } from 'lucide-react';
 
 const ReportUser = () => {
   const [reportForm, setReportForm] = useState({
@@ -12,7 +12,7 @@ const ReportUser = () => {
     transactionDate: '',
     category: '',
     description: '',
-    evidence: null as File | null,
+    evidence: [] as File[],
     urgency: 'medium',
     previousAttempts: '',
     witnessDetails: ''
@@ -47,6 +47,23 @@ const ReportUser = () => {
     { value: 'fake-profile', label: 'Fake Profile', severity: 'medium' },
     { value: 'other', label: 'Other', severity: 'low' }
   ];
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setReportForm(prev => ({
+        ...prev,
+        evidence: [...prev.evidence, ...newFiles]
+      }));
+    }
+  };
+
+  const handleRemoveFile = (fileName: string) => {
+    setReportForm(prev => ({
+      ...prev,
+      evidence: prev.evidence.filter(file => file.name !== fileName)
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,11 +87,17 @@ const ReportUser = () => {
     setReportForm({
       recipientUpi: '',
       recipientName: '',
+      recipientPhone: '',
+      recipientAddress: '',
       amount: '',
       transactionId: '',
+      transactionDate: '',
       category: '',
       description: '',
-      evidence: null
+      evidence: [],
+      urgency: 'medium',
+      previousAttempts: '',
+      witnessDetails: ''
     });
   };
 
@@ -343,7 +366,7 @@ const ReportUser = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Evidence (Screenshots, Messages, Documents) *
             </label>
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors">
+            <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors">
               <div className="space-y-2">
                 <FileText className="h-8 w-8 text-gray-400 mx-auto" />
                 <p className="text-sm text-gray-600">
@@ -358,9 +381,30 @@ const ReportUser = () => {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 accept="image/*,.pdf"
                 multiple
-                onChange={(e) => setReportForm({...reportForm, evidence: e.target.files?.[0] || null})}
+                onChange={handleFileChange}
               />
             </div>
+            {reportForm.evidence.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <h4 className="text-sm font-medium text-gray-700">Uploaded files:</h4>
+                {reportForm.evidence.map((file, index) => (
+                  <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
+                    <div className="flex items-center space-x-2 overflow-hidden">
+                      <Paperclip className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      <span className="text-sm text-gray-800 truncate">{file.name}</span>
+                      <span className="text-xs text-gray-500 flex-shrink-0">({(file.size / 1024).toFixed(1)} KB)</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFile(file.name)}
+                      className="p-1 text-gray-500 hover:text-red-600 hover:bg-red-100 rounded-full"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             <p className="text-sm text-orange-600 mt-2">
               <AlertTriangle className="inline h-4 w-4 mr-1" />
               Evidence is required for processing your report. Screenshots of conversations, transaction receipts, etc.
