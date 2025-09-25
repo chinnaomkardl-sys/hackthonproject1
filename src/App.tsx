@@ -13,6 +13,12 @@ import PersonTransactionHistory from './components/PersonTransactionHistory';
 import { supabase } from './lib/supabase';
 import { knownUsers } from './data/knownUsers';
 
+// Define a more descriptive return type for the send money handler
+interface SendMoneyResult {
+  success: boolean;
+  userFound: boolean;
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [showAlert, setShowAlert] = useState(false);
@@ -20,7 +26,7 @@ function App() {
   const [currentView, setCurrentView] = useState('dashboard');
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
 
-  const handleSendMoney = async (recipient: string, amount: number): Promise<boolean> => {
+  const handleSendMoney = async (recipient: string, amount: number): Promise<SendMoneyResult> => {
     // 1. Check local known users list first
     const knownUser = knownUsers.find(
       (user) => user.upi_ids.includes(recipient.toLowerCase()) || user.upi_number === recipient
@@ -30,8 +36,11 @@ function App() {
       if (knownUser.score < 80) { // Trigger alert for any known user with score < 80
         setAlertData({ recipient: knownUser.user_name, trustScore: knownUser.score, message: knownUser.msg });
         setShowAlert(true);
-        return false; // Stop transaction
+        return { success: false, userFound: true }; // Stop transaction, user was found
       }
+      // If score is good, proceed
+      console.log(`Transaction of ${amount} to ${recipient} approved.`);
+      return { success: true, userFound: true };
     }
 
     // 2. If not in local list, check Supabase 'profiles' table
@@ -43,6 +52,7 @@ function App() {
 
     if (error && error.code !== 'PGRST116') { // PGRST116: 'single' row not found
       console.error('Error fetching profile:', error);
+      // Let it fall through to the "not found" case
     }
 
     if (profile) {
@@ -53,27 +63,15 @@ function App() {
           message: `This user has a low trust score of ${profile.score}. Proceed with caution.`,
         });
         setShowAlert(true);
-        return false; // Stop transaction
+        return { success: false, userFound: true }; // Stop transaction, user was found
       }
+      // If score is good, proceed
+      console.log(`Transaction of ${amount} to ${recipient} approved.`);
+      return { success: true, userFound: true };
     }
     
-    // 3. Fallback for unknown users (for demonstration)
-    if (!knownUser && !profile) {
-      const randomTrustScore = Math.floor(Math.random() * 100);
-      if (randomTrustScore < 50) {
-        setAlertData({ 
-          recipient, 
-          trustScore: randomTrustScore,
-          message: `This is an unknown user with a simulated low trust score. Be careful.`
-        });
-        setShowAlert(true);
-        return false;
-      }
-    }
-
-    // If all checks pass, allow the transaction
-    console.log(`Transaction of ${amount} to ${recipient} approved.`);
-    return true;
+    // 3. If not found in local data or Supabase, the user is not valid
+    return { success: false, userFound: false };
   };
 
   const handleViewPersonHistory = (personName: string) => {
@@ -92,14 +90,14 @@ function App() {
           case 'send-money':
             return <SendMoney onBack={handleBackToDashboard} onSendMoney={handleSendMoney} />;
           case 'scan-qr':
-            return <ScanQR onBack={handleBackToDashboard} onSendMoney={handleSendMoney} />;
+            return <ScanQR onBack={handleBackToDashboard} onSendMoney={async (r, a) => (await handleSendMoney(r, a)).success} />;
           case 'pay-bills':
             return <PayBills onBack={handleBackToDashboard} />;
           case 'person-history':
             return <PersonTransactionHistory personName={selectedPerson!} onBack={handleBackToDashboard} />;
           default:
             return <Dashboard 
-              onSendMoney={handleSendMoney} 
+              onSendMoney={async (r, a) => (await handleSendMoney(r, a)).success} 
               onNavigate={setCurrentView}
               onViewPersonHistory={handleViewPersonHistory}
               onNavigateToScoreTab={() => setActiveTab('score')}
@@ -115,7 +113,7 @@ function App() {
         return <Help />;
       default:
         return <Dashboard 
-          onSendMoney={handleSendMoney} 
+          onSendMoney={async (r, a) => (await handleSendMoney(r, a)).success} 
           onNavigate={setCurrentView}
           onViewPersonHistory={handleViewPersonHistory}
           onNavigateToScoreTab={() => setActiveTab('score')}

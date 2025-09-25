@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Send, QrCode, Smartphone, User, CreditCard, AlertTriangle } from 'lucide-react';
 
+interface SendMoneyResult {
+  success: boolean;
+  userFound: boolean;
+}
+
 interface SendMoneyProps {
   onBack: () => void;
-  onSendMoney: (recipient: string, amount: number) => Promise<boolean>;
+  onSendMoney: (recipient: string, amount: number) => Promise<SendMoneyResult>;
 }
 
 const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
@@ -21,17 +26,21 @@ const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
 
     setIsProcessing(true);
     
-    // The onSendMoney function now handles the logic and alert display
-    const success = await onSendMoney(recipient, parseFloat(amount));
+    const result = await onSendMoney(recipient, parseFloat(amount));
     
-    if (success) {
-      // Show success message only if the transaction wasn't flagged
+    if (result.success) {
+      // Show success message only if the transaction wasn't flagged and was successful
       alert(`₹${amount} sent successfully to ${recipient}`);
       setRecipient('');
       setAmount('');
       setNote('');
       onBack();
+    } else if (!result.userFound) {
+      // If the user was not found, show a specific error message
+      alert('Recipient not found. Please check the UPI ID or phone number and try again.');
     }
+    // If the user was found but the transaction failed (due to low score alert),
+    // the modal is already handled in App.tsx, so we do nothing here.
     
     setIsProcessing(false);
   };
