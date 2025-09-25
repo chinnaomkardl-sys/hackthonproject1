@@ -10,23 +10,69 @@ import SendMoney from './components/SendMoney';
 import ScanQR from './components/ScanQR';
 import PayBills from './components/PayBills';
 import PersonTransactionHistory from './components/PersonTransactionHistory';
+import { supabase } from './lib/supabase';
+import { knownUsers } from './data/knownUsers';
 
 function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [showAlert, setShowAlert] = useState(false);
-  const [alertData, setAlertData] = useState({ recipient: '', trustScore: 0 });
+  const [alertData, setAlertData] = useState({ recipient: '', trustScore: 0, message: '' });
   const [currentView, setCurrentView] = useState('dashboard');
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
 
-  const handleSendMoney = (recipient: string, amount: number) => {
-    // Simulate checking trust score
-    const trustScore = Math.floor(Math.random() * 100);
-    
-    if (trustScore < 50) {
-      setAlertData({ recipient, trustScore });
-      setShowAlert(true);
-      return false;
+  const handleSendMoney = async (recipient: string, amount: number): Promise<boolean> => {
+    // 1. Check local known users list first
+    const knownUser = knownUsers.find(
+      (user) => user.upi_ids.includes(recipient.toLowerCase()) || user.upi_number === recipient
+    );
+
+    if (knownUser) {
+      if (knownUser.score < 80) { // Trigger alert for any known user with score < 80
+        setAlertData({ recipient: knownUser.user_name, trustScore: knownUser.score, message: knownUser.msg });
+        setShowAlert(true);
+        return false; // Stop transaction
+      }
     }
+
+    // 2. If not in local list, check Supabase 'profiles' table
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('name, score, upi_id, upi_number')
+      .or(`upi_id.eq.${recipient},upi_number.eq.${recipient}`)
+      .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116: 'single' row not found
+      console.error('Error fetching profile:', error);
+    }
+
+    if (profile) {
+      if (profile.score < 50) {
+        setAlertData({
+          recipient: profile.name,
+          trustScore: profile.score,
+          message: `This user has a low trust score of ${profile.score}. Proceed with caution.`,
+        });
+        setShowAlert(true);
+        return false; // Stop transaction
+      }
+    }
+    
+    // 3. Fallback for unknown users (for demonstration)
+    if (!knownUser && !profile) {
+      const randomTrustScore = Math.floor(Math.random() * 100);
+      if (randomTrustScore < 50) {
+        setAlertData({ 
+          recipient, 
+          trustScore: randomTrustScore,
+          message: `This is an unknown user with a simulated low trust score. Be careful.`
+        });
+        setShowAlert(true);
+        return false;
+      }
+    }
+
+    // If all checks pass, allow the transaction
+    console.log(`Transaction of ${amount} to ${recipient} approved.`);
     return true;
   };
 
@@ -113,13 +159,13 @@ function App() {
             { id: 'home', icon: Home, label: 'Home' },
             { id: 'history', icon: Clock, label: 'History' },
             { id: 'score', icon: Star, label: 'Score' },
-            { id: 'report', icon: AlertTriangle, label: 'Report' },
+            { id: 'report', icon: AlertTriangle, label: 'Report', notification: true },
             { id: 'help', icon: HelpCircle, label: 'Help' }
-          ].map(({ id, icon: Icon, label }) => (
+          ].map(({ id, icon: Icon, label, notification }) => (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex flex-col items-center space-y-1 p-2 rounded-lg transition-all duration-200 ${
+              className={`relative flex flex-col items-center space-y-1 p-2 rounded-lg transition-all duration-200 ${
                 activeTab === id
                   ? 'text-blue-600 bg-blue-50'
                   : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
@@ -127,6 +173,12 @@ function App() {
             >
               <Icon className="h-5 w-5" />
               <span className="text-xs font-medium">{label}</span>
+              {notification && (
+                <span className="absolute top-1 right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -137,10 +189,12 @@ function App() {
         <AlertModal
           recipient={alertData.recipient}
           trustScore={alertData.trustScore}
+          message={alertData.message}
           onClose={() => setShowAlert(false)}
           onProceed={() => {
             setShowAlert(false);
             // Handle proceeding with transaction
+            alert('Transaction proceeded despite warning.');
           }}
         />
       )}

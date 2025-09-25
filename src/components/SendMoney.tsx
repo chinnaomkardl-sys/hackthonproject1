@@ -3,7 +3,7 @@ import { ArrowLeft, Send, QrCode, Smartphone, User, CreditCard, AlertTriangle } 
 
 interface SendMoneyProps {
   onBack: () => void;
-  onSendMoney: (recipient: string, amount: number) => boolean;
+  onSendMoney: (recipient: string, amount: number) => Promise<boolean>;
 }
 
 const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
@@ -21,13 +21,11 @@ const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
 
     setIsProcessing(true);
     
-    // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const success = onSendMoney(recipient, parseFloat(amount));
+    // The onSendMoney function now handles the logic and alert display
+    const success = await onSendMoney(recipient, parseFloat(amount));
     
     if (success) {
-      // Show success message
+      // Show success message only if the transaction wasn't flagged
       alert(`₹${amount} sent successfully to ${recipient}`);
       setRecipient('');
       setAmount('');

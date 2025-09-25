@@ -4,11 +4,12 @@ import { AlertTriangle, X, Shield, TrendingDown } from 'lucide-react';
 interface AlertModalProps {
   recipient: string;
   trustScore: number;
+  message?: string;
   onClose: () => void;
   onProceed: () => void;
 }
 
-const AlertModal: React.FC<AlertModalProps> = ({ recipient, trustScore, onClose, onProceed }) => {
+const AlertModal: React.FC<AlertModalProps> = ({ recipient, trustScore, message, onClose, onProceed }) => {
   const getScoreColor = (score: number) => {
     if (score >= 70) return 'text-green-600';
     if (score >= 50) return 'text-yellow-600';
@@ -57,7 +58,7 @@ const AlertModal: React.FC<AlertModalProps> = ({ recipient, trustScore, onClose,
           {/* Warning Message */}
           <div className="text-center">
             <p className="text-gray-800 font-medium">
-              The recipient has a low trust score. Please review the details before proceeding.
+              {message || 'The recipient has a low trust score. Please review the details before proceeding.'}
             </p>
           </div>
 

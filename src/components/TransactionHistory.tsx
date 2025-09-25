@@ -8,59 +8,70 @@ const TransactionHistory = () => {
 
   const transactions = [
     {
-      id: 'TXN001',
-      name: 'John Doe',
-      upiId: 'john.doe@paytm',
-      amount: -2500,
+      id: 'TXN101',
+      name: 'Sneha Reddy',
+      upiId: 'sneha@ybl',
+      amount: -1850,
       type: 'sent',
       status: 'completed',
-      date: '2024-01-15T14:30:00Z',
-      trustScore: 85,
-      canRefund: false
+      date: '2025-07-20T14:30:00Z',
+      trustScore: 39,
+      canRefund: true
     },
     {
-      id: 'TXN002',
-      name: 'Alice Smith',
-      upiId: 'alice.smith@gpay',
-      amount: 1200,
+      id: 'TXN102',
+      name: 'Ramesh Kumar',
+      upiId: 'ramesh@ybl',
+      amount: 3200,
       type: 'received',
       status: 'completed',
-      date: '2024-01-14T10:15:00Z',
+      date: '2025-07-19T10:15:00Z',
       trustScore: 92,
       canRefund: false
     },
     {
-      id: 'TXN003',
-      name: 'Bob Wilson',
-      upiId: 'bob.wilson@phonepe',
-      amount: -850,
+      id: 'TXN103',
+      name: 'Vikram Singh',
+      upiId: 'vikram@upi',
+      amount: -500,
+      type: 'sent',
+      status: 'failed',
+      date: '2025-07-18T16:45:00Z',
+      trustScore: 20,
+      canRefund: false
+    },
+    {
+      id: 'TXN104',
+      name: 'Arjun Mehta',
+      upiId: 'arjun@upi',
+      amount: -1200,
       type: 'sent',
       status: 'pending',
-      date: '2024-01-13T16:45:00Z',
-      trustScore: 45,
+      date: '2025-07-18T09:20:00Z',
+      trustScore: 58,
       canRefund: true
     },
     {
-      id: 'TXN004',
-      name: 'Carol Brown',
-      upiId: 'carol.brown@paytm',
-      amount: -3200,
-      type: 'sent',
-      status: 'failed',
-      date: '2024-01-12T09:20:00Z',
-      trustScore: 78,
-      canRefund: false
-    },
-    {
-      id: 'TXN005',
-      name: 'David Lee',
-      upiId: 'david.lee@gpay',
+      id: 'TXN105',
+      name: 'Priya Sharma',
+      upiId: 'priya@paytm',
       amount: 750,
       type: 'received',
       status: 'completed',
-      date: '2024-01-11T13:10:00Z',
-      trustScore: 88,
+      date: '2025-07-17T13:10:00Z',
+      trustScore: 76,
       canRefund: false
+    },
+    {
+      id: 'TXN106',
+      name: 'Omkar',
+      upiId: 'omkar@upi',
+      amount: -400,
+      type: 'sent',
+      status: 'completed',
+      date: '2025-07-16T11:00:00Z',
+      trustScore: 40,
+      canRefund: true
     }
   ];
 
@@ -169,7 +180,7 @@ const TransactionHistory = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total Sent</p>
-              <p className="text-2xl font-bold text-red-600">₹6,550</p>
+              <p className="text-2xl font-bold text-red-600">₹3,950</p>
             </div>
             <div className="bg-red-100 p-3 rounded-full">
               <TrendingUp className="h-6 w-6 text-red-600" />
@@ -181,7 +192,7 @@ const TransactionHistory = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total Received</p>
-              <p className="text-2xl font-bold text-green-600">₹1,950</p>
+              <p className="text-2xl font-bold text-green-600">₹3,950</p>
             </div>
             <div className="bg-green-100 p-3 rounded-full">
               <TrendingDown className="h-6 w-6 text-green-600" />
@@ -193,7 +204,7 @@ const TransactionHistory = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Net Balance</p>
-              <p className="text-2xl font-bold text-blue-600">-₹4,600</p>
+              <p className="text-2xl font-bold text-blue-600">₹0</p>
             </div>
             <div className="bg-blue-100 p-3 rounded-full">
               <RefreshCw className="h-6 w-6 text-blue-600" />

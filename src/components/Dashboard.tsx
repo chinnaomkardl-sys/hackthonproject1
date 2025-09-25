@@ -22,11 +22,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onSendMoney, onNavigate, onViewPe
   };
 
   const recentTransactions = [
-    { name: 'John Doe', amount: -2500, type: 'sent', time: '2 hours ago', avatar: 'JD' },
-    { name: 'Alice Smith', amount: 1200, type: 'received', time: '1 day ago', avatar: 'AS' },
-    { name: 'Bob Wilson', amount: -850, type: 'sent', time: '2 days ago', avatar: 'BW' },
-    { name: 'Carol Brown', amount: 3200, type: 'received', time: '3 days ago', avatar: 'CB' },
-    { name: 'David Lee', amount: -1500, type: 'sent', time: '4 days ago', avatar: 'DL' }
+    { name: 'Priya Sharma', amount: 1200, type: 'received', time: '1 day ago', avatar: 'PS' },
+    { name: 'Arjun Mehta', amount: -850, type: 'sent', time: '2 days ago', avatar: 'AM' },
+    { name: 'Sneha Reddy', amount: -390, type: 'sent', time: '3 days ago', avatar: 'SR' },
+    { name: 'Ramesh Kumar', amount: 5000, type: 'received', time: '4 days ago', avatar: 'RK' },
   ];
 
   return (
@@ -112,7 +111,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onSendMoney, onNavigate, onViewPe
         </div>
         
         <div className="space-y-3">
-          {recentTransactions.slice(0, 3).map((transaction, index) => (
+          {recentTransactions.map((transaction, index) => (
             <button
               key={index}
               onClick={() => onViewPersonHistory(transaction.name)}

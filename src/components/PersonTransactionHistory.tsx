@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Send, Download, MessageCircle, AlertTriangle, CheckCircle, Clock, RefreshCw } from 'lucide-react';
+import { knownUsers } from '../data/knownUsers';
+import { supabase } from '../lib/supabase';
 
 interface PersonTransactionHistoryProps {
   personName: string;
@@ -9,16 +11,56 @@ interface PersonTransactionHistoryProps {
 const PersonTransactionHistory: React.FC<PersonTransactionHistoryProps> = ({ personName, onBack }) => {
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<string | null>(null);
+  const [personData, setPersonData] = useState<any>(null);
 
-  // Mock data for the specific person
-  const personData = {
-    name: personName,
-    upi: `${personName.toLowerCase().replace(' ', '.')}@paytm`,
-    trustScore: Math.floor(Math.random() * 100),
-    totalTransactions: Math.floor(Math.random() * 50) + 10,
-    totalAmount: Math.floor(Math.random() * 50000) + 10000,
-    avatar: personName.split(' ').map(n => n[0]).join('')
-  };
+  useEffect(() => {
+    const fetchPersonData = async () => {
+      // 1. Check local known users
+      const knownUser = knownUsers.find(u => u.user_name === personName);
+      if (knownUser) {
+        setPersonData({
+          name: knownUser.user_name,
+          upi: knownUser.upi_ids[0],
+          trustScore: knownUser.score,
+          totalTransactions: Math.floor(Math.random() * 50) + 10,
+          totalAmount: Math.floor(Math.random() * 50000) + 10000,
+          avatar: knownUser.user_name.split(' ').map(n => n[0]).join('')
+        });
+        return;
+      }
+
+      // 2. Check Supabase if not found locally
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, score, upi_id')
+        .eq('name', personName)
+        .single();
+      
+      if (profile) {
+        setPersonData({
+          name: profile.name,
+          upi: profile.upi_id,
+          trustScore: profile.score,
+          totalTransactions: Math.floor(Math.random() * 20) + 5,
+          totalAmount: Math.floor(Math.random() * 20000) + 5000,
+          avatar: profile.name.split(' ').map((n: string) => n[0]).join('')
+        });
+        return;
+      }
+
+      // 3. Fallback for other users (from old mock data)
+      setPersonData({
+        name: personName,
+        upi: `${personName.toLowerCase().replace(' ', '.')}@paytm`,
+        trustScore: Math.floor(Math.random() * 40) + 60, // Assume unknown users are decent
+        totalTransactions: Math.floor(Math.random() * 10) + 1,
+        totalAmount: Math.floor(Math.random() * 10000) + 1000,
+        avatar: personName.split(' ').map(n => n[0]).join('')
+      });
+    };
+
+    fetchPersonData();
+  }, [personName]);
 
   const transactions = [
     {
@@ -120,6 +162,14 @@ const PersonTransactionHistory: React.FC<PersonTransactionHistoryProps> = ({ per
     setShowRefundModal(false);
     setSelectedTransaction(null);
   };
+
+  if (!personData) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   const totalSent = transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
   const totalReceived = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
