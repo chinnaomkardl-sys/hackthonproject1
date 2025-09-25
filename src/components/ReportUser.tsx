@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangle, User, Calendar, FileText, Send, Shield, Search, Phone, MapPin, CreditCard, Clock, X, Paperclip, UploadCloud, UserCheck, ShieldAlert } from 'lucide-react';
+import ReportDetailsModal, { Report } from './ReportDetailsModal';
 
 const ReportUser = () => {
   const [reportForm, setReportForm] = useState({
@@ -18,8 +19,9 @@ const ReportUser = () => {
     witnessDetails: ''
   });
   const [isDragging, setIsDragging] = useState(false);
+  const [viewingReport, setViewingReport] = useState<Report | null>(null);
 
-  const [previousReports, setPreviousReports] = useState([
+  const [previousReports, setPreviousReports] = useState<Report[]>([
     {
       id: 'RPT001',
       reportedUser: 'John Doe (john.doe@paytm)',
@@ -27,7 +29,7 @@ const ReportUser = () => {
       amount: 5000,
       status: 'Under Review',
       date: '2024-01-14',
-      description: 'Borrowed money for emergency but not returning calls'
+      description: 'Borrowed money for an emergency but is not returning calls or messages. The agreed-upon return date was two weeks ago. I have screenshots of our chat conversation.'
     },
     {
       id: 'RPT002',
@@ -36,7 +38,7 @@ const ReportUser = () => {
       amount: 1200,
       status: 'Resolved',
       date: '2024-01-10',
-      description: 'Transaction made without authorization'
+      description: 'A transaction was made from my account to this user without my authorization. My account was compromised, and this was one of the fraudulent payments.'
     }
   ]);
 
@@ -101,7 +103,7 @@ const ReportUser = () => {
     e.preventDefault();
     console.log('Submitting report:', reportForm);
     
-    const newReport = {
+    const newReport: Report = {
       id: `RPT${String(previousReports.length + 1).padStart(3, '0')}`,
       reportedUser: `${reportForm.recipientName} (${reportForm.recipientUpi})`,
       category: reportCategories.find(c => c.value === reportForm.category)?.label || 'Other',
@@ -133,6 +135,8 @@ const ReportUser = () => {
 
   return (
     <div className="space-y-6">
+      {viewingReport && <ReportDetailsModal report={viewingReport} onClose={() => setViewingReport(null)} />}
+
       <div className="flex items-center space-x-3">
         <ShieldAlert className="h-8 w-8 text-red-600" />
         <div>
@@ -159,6 +163,7 @@ const ReportUser = () => {
         <h2 className="text-xl font-semibold text-gray-900 mb-6">File a New Report</h2>
         
         <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Form sections remain the same */}
           <div className="space-y-6">
             <h4 className="font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center space-x-2">
               <UserCheck className="h-5 w-5 text-blue-600" />
@@ -266,7 +271,6 @@ const ReportUser = () => {
                   ))}
                 </div>
               )}
-              <p className="text-sm text-orange-600 mt-2"><AlertTriangle className="inline h-4 w-4 mr-1" />Evidence is crucial. Please upload screenshots of chats, transaction receipts, etc.</p>
             </div>
           </div>
 
@@ -299,9 +303,8 @@ const ReportUser = () => {
                     <p><strong>Category:</strong> {report.category}</p>
                     <p><strong>Amount:</strong> ₹{report.amount.toLocaleString('en-IN')}</p>
                   </div>
-                  <p className="text-sm text-gray-700 mt-2 line-clamp-2">{report.description}</p>
                 </div>
-                <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">View Details</button>
+                <button onClick={() => setViewingReport(report)} className="text-blue-600 hover:text-blue-700 text-sm font-medium">View Details</button>
               </div>
             </div>
           ))}

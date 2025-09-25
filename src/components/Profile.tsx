@@ -1,5 +1,6 @@
 import React from 'react';
 import { User, Shield, Settings, Bell, Lock, LogOut, ChevronRight } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ProfileProps {
   onNavigate: (view: string) => void;
@@ -7,11 +8,13 @@ interface ProfileProps {
 }
 
 const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
-  const user = {
-    name: 'Omkar',
-    upiId: 'omkar@securepay',
-    avatar: 'O',
-    trustScore: 78,
+  const { user } = useAuth();
+
+  const profile = {
+    name: user?.user_metadata.name || user?.email?.split('@')[0] || 'User',
+    upiId: user?.user_metadata.upi_id || user?.email || 'no-email@securepay',
+    avatar: (user?.user_metadata.name || user?.email || 'U')[0].toUpperCase(),
+    trustScore: 78, // This would come from the profile table in a real app
   };
 
   const menuItems = [
@@ -27,7 +30,7 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
       <div className="flex flex-col items-center space-y-4">
         <div className="relative">
           <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
-            <span className="text-4xl font-bold text-white">{user.avatar}</span>
+            <span className="text-4xl font-bold text-white">{profile.avatar}</span>
           </div>
           <button 
             onClick={() => onNavigate('edit-profile')}
@@ -37,8 +40,8 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
           </button>
         </div>
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
-          <p className="text-gray-600">{user.upiId}</p>
+          <h1 className="text-2xl font-bold text-gray-900">{profile.name}</h1>
+          <p className="text-gray-600">{profile.upiId}</p>
         </div>
       </div>
 
@@ -55,7 +58,7 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
             </div>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-green-600">{user.trustScore}</p>
+            <p className="text-2xl font-bold text-green-600">{profile.trustScore}</p>
             <p className="text-sm text-green-600">Excellent</p>
           </div>
         </div>

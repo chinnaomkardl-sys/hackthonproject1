@@ -1,33 +1,21 @@
-import React, { useState } from 'react';
-import { Send, QrCode, CreditCard, Plus, ArrowRight, Wallet, Star } from 'lucide-react';
+import React from 'react';
+import { Send, QrCode, CreditCard, ArrowRight, Wallet, Star } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 
 interface DashboardProps {
   onNavigate: (view: string) => void;
   onViewPersonHistory: (personName: string) => void;
-  onNavigateToScoreTab: () => void;
+  onNavigateToProfileTab: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onViewPersonHistory, onNavigateToScoreTab }) => {
-  const [balance] = useState(25420.50);
+const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onViewPersonHistory, onNavigateToProfileTab }) => {
+  const balance = 25420.50;
   const userTrustScore = 78;
   const { showToast } = useToast();
-
-  const handleAddMoney = () => {
-    const reloadAmount = Math.floor(Math.random() * 5000) + 1000;
-    showToast(`This is a demo. Mock amount: ₹${reloadAmount.toFixed(2)}`, 'info');
-  };
 
   const handleCheckBalance = () => {
     showToast(`Your available balance is: ₹${balance.toLocaleString('en-IN')}`, 'info');
   };
-
-  const recentTransactions = [
-    { name: 'Priya Sharma', amount: 1200, type: 'received', time: '1 day ago', avatar: 'PS' },
-    { name: 'Arjun Mehta', amount: -850, type: 'sent', time: '2 days ago', avatar: 'AM' },
-    { name: 'Sneha Reddy', amount: -390, type: 'sent', time: '3 days ago', avatar: 'SR' },
-    { name: 'Ramesh Kumar', amount: 5000, type: 'received', time: '4 days ago', avatar: 'RK' },
-  ];
 
   return (
     <div className="space-y-8">
@@ -45,17 +33,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onViewPersonHistory, 
           </div>
           <div className="flex items-center space-x-3">
             <button
-              onClick={onNavigateToScoreTab}
+              onClick={onNavigateToProfileTab}
               className="bg-blue-500 hover:bg-blue-400 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
             >
-              View Details
-            </button>
-            <button
-              onClick={handleAddMoney}
-              className="bg-blue-500 hover:bg-blue-400 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center space-x-2"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Money</span>
+              My Profile
             </button>
           </div>
         </div>
@@ -104,45 +85,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onViewPersonHistory, 
         </button>
       </div>
 
-      {/* Recent Transactions Preview */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Recent Transactions</h3>
-          <button onClick={() => showToast('Navigating to all transactions...', 'info')} className="text-blue-600 text-sm font-medium hover:text-blue-700">View All</button>
-        </div>
-        
-        <div className="space-y-3">
-          {recentTransactions.map((transaction, index) => (
-            <button
-              key={index}
-              onClick={() => onViewPersonHistory(transaction.name)}
-              className="w-full flex items-center justify-between py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 rounded-lg px-2 transition-colors"
-            >
-              <div className="flex items-center space-x-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  transaction.type === 'sent' ? 'bg-red-100' : 'bg-green-100'
-                }`}>
-                  <span className="text-sm font-semibold text-gray-700">
-                    {transaction.avatar}
-                  </span>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">{transaction.name}</p>
-                  <p className="text-sm text-gray-500">{transaction.time}</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className={`font-semibold ${
-                  transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {transaction.amount > 0 ? '+' : ''}₹{Math.abs(transaction.amount)}
-                </div>
-                <ArrowRight className="h-4 w-4 text-gray-400" />
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* This section has been removed as per your request */}
+      {/* <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"> ... </div> */}
     </div>
   );
 };

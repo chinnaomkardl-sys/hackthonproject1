@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Clock, HelpCircle, Star, AlertTriangle, Shield, User } from 'lucide-react';
+import { Home, Clock, Star, AlertTriangle, Shield, User as UserIcon } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import TransactionHistory from './components/TransactionHistory';
 import Help from './components/Help';
@@ -18,15 +18,17 @@ import EditProfile from './components/profile/EditProfile';
 import AccountSettings from './components/profile/AccountSettings';
 import Notifications from './components/profile/Notifications';
 import PrivacySecurity from './components/profile/PrivacySecurity';
+import { useAuth } from './contexts/AuthContext';
+import Auth from './components/auth/Auth';
 
-// Define a more descriptive return type for the send money handler
 interface SendMoneyResult {
   success: boolean;
   userFound: boolean;
-  error?: string; // Add optional error message for DB issues
+  error?: string;
 }
 
 function App() {
+  const { session, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [showAlert, setShowAlert] = useState(false);
   const [alertData, setAlertData] = useState({ recipient: '', trustScore: 0, message: '' });
@@ -36,32 +38,28 @@ function App() {
   const { showToast } = useToast();
 
   const handleSendMoney = async (recipient: string, amount: number): Promise<SendMoneyResult> => {
-    // 1. Check local known users list first
     const knownUser = knownUsers.find(
       (user) => user.upi_ids.includes(recipient.toLowerCase()) || user.upi_number === recipient
     );
 
     if (knownUser) {
-      if (knownUser.score < 80) { // Trigger alert for any known user with score < 80
+      if (knownUser.score < 80) {
         setAlertData({ recipient: knownUser.user_name, trustScore: knownUser.score, message: knownUser.msg });
         setShowAlert(true);
-        return { success: false, userFound: true }; // Stop transaction, user was found
+        return { success: false, userFound: true };
       }
-      // If score is good, proceed
       showToast(`Transaction of ₹${amount} to ${recipient} approved.`, 'success');
       return { success: true, userFound: true };
     }
 
-    // 2. If not in local list, check Supabase 'profiles' table
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('name, score, upi_id, upi_number')
       .or(`upi_id.eq.${recipient},upi_number.eq.${recipient}`)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116: 'single' row not found
+    if (error && error.code !== 'PGRST116') {
       console.error('Error fetching profile:', error);
-      // Return a specific error message to be displayed to the user
       return { success: false, userFound: false, error: 'A database error occurred. Please try again later.' };
     }
 
@@ -73,14 +71,12 @@ function App() {
           message: `This user has a low trust score of ${profile.score}. Proceed with caution.`,
         });
         setShowAlert(true);
-        return { success: false, userFound: true }; // Stop transaction, user was found
+        return { success: false, userFound: true };
       }
-      // If score is good, proceed
       showToast(`Transaction of ₹${amount} to ${recipient} approved.`, 'success');
       return { success: true, userFound: true };
     }
     
-    // 3. If not found in local data or Supabase, the user is not valid
     return { success: false, userFound: false };
   };
 
@@ -102,8 +98,8 @@ function App() {
     setProfileView('main');
   };
 
-  const handleLogout = () => {
-    showToast('You have been logged out.', 'info');
+  const handleLogout = async () => {
+    await logout();
     setActiveTab('home');
     setCurrentView('dashboard');
   };
@@ -124,7 +120,7 @@ function App() {
             return <Dashboard 
               onNavigate={setCurrentView}
               onViewPersonHistory={handleViewPersonHistory}
-              onNavigateToScoreTab={() => setActiveTab('score')}
+              onNavigateToProfileTab={() => setActiveTab('profile')}
             />;
         }
       case 'history':
@@ -152,14 +148,21 @@ function App() {
         return <Dashboard 
           onNavigate={setCurrentView}
           onViewPersonHistory={handleViewPersonHistory}
-          onNavigateToScoreTab={() => setActiveTab('score')}
+          onNavigateToProfileTab={() => setActiveTab('profile')}
         />;
     }
   };
 
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-rose-50 flex items-center justify-center p-4">
+        <Auth />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-rose-50">
-      {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -181,12 +184,10 @@ function App() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
         {renderContent()}
       </main>
 
-      {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-2 z-10">
         <div className="flex justify-around items-center max-w-md mx-auto">
           {[
@@ -194,13 +195,12 @@ function App() {
             { id: 'history', icon: Clock, label: 'History' },
             { id: 'score', icon: Star, label: 'Score' },
             { id: 'report', icon: AlertTriangle, label: 'Report', notification: true },
-            { id: 'profile', icon: User, label: 'Profile' },
+            { id: 'profile', icon: UserIcon, label: 'Profile' },
           ].map(({ id, icon: Icon, label, notification }) => (
             <button
               key={id}
               onClick={() => {
                 setActiveTab(id);
-                // Reset views when switching tabs
                 setCurrentView('dashboard');
                 setProfileView('main');
               }}
@@ -223,7 +223,6 @@ function App() {
         </div>
       </nav>
 
-      {/* Alert Modal */}
       {showAlert && (
         <AlertModal
           recipient={alertData.recipient}

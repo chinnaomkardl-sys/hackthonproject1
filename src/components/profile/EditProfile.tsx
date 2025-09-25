@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, User, Mail } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -8,9 +8,14 @@ interface EditProfileProps {
 
 const EditProfile: React.FC<EditProfileProps> = ({ onBack }) => {
   const { showToast } = useToast();
+  const [fullName, setFullName] = useState('Omkar');
+  const [upiId, setUpiId] = useState('omkar@securepay');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // In a real app, you would send this data to your backend.
+    // For now, we just show a success message.
+    console.log('Saving profile:', { fullName, upiId });
     showToast('Profile updated successfully!', 'success');
     onBack();
   };
@@ -33,14 +38,24 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack }) => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input type="text" defaultValue="Omkar" className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+              <input 
+                type="text" 
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              />
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">UPI ID</label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input type="text" defaultValue="omkar@securepay" className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+              <input 
+                type="text" 
+                value={upiId}
+                onChange={(e) => setUpiId(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              />
             </div>
           </div>
           <div className="flex justify-end">

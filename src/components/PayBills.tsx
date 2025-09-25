@@ -61,9 +61,11 @@ const PayBills: React.FC<PayBillsProps> = ({ onBack }) => {
   ];
 
   const recentBills = [
-    { provider: 'BESCOM', account: '****1234', amount: 1250, dueDate: '2024-01-20', category: 'Electricity' },
-    { provider: 'Airtel', account: '****5678', amount: 599, dueDate: '2024-01-18', category: 'Mobile' },
-    { provider: 'Jio Fiber', account: '****9012', amount: 999, dueDate: '2024-01-22', category: 'Internet' }
+    { provider: 'BESCOM', account: '****1234', amount: 1250, dueDate: '2025-07-20', category: 'Electricity' },
+    { provider: 'Airtel', account: '****5678', amount: 599, dueDate: '2025-07-18', category: 'Mobile' },
+    { provider: 'Jio Fiber', account: '****9012', amount: 999, dueDate: '2025-07-22', category: 'Internet' },
+    { provider: 'LIC', account: '****4567', amount: 5500, dueDate: '2025-08-01', category: 'Insurance' },
+    { provider: 'HDFC Bank', account: '****1121', amount: 8750, dueDate: '2025-07-25', category: 'Credit Card' },
   ];
 
   const handlePayBill = () => {
@@ -251,29 +253,6 @@ const PayBills: React.FC<PayBillsProps> = ({ onBack }) => {
               </div>
             </div>
           )}
-
-          {/* Bill Payment Benefits */}
-          <div className="bg-green-50 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-green-900 mb-3">Why Pay Bills with SecurePay?</h3>
-            <ul className="space-y-2 text-green-800">
-              <li className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                <span>Instant payment confirmation</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                <span>No additional charges</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                <span>Secure and encrypted transactions</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                <span>24/7 customer support</span>
-              </li>
-            </ul>
-          </div>
         </div>
       )}
     </div>

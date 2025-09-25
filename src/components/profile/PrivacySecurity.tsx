@@ -6,6 +6,10 @@ interface PrivacySecurityProps {
 }
 
 const PrivacySecurity: React.FC<PrivacySecurityProps> = ({ onBack }) => {
+  const handleFeatureClick = (featureName: string) => {
+    alert(`${featureName} feature is under development. This is a placeholder action.`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
@@ -28,7 +32,7 @@ const PrivacySecurity: React.FC<PrivacySecurityProps> = ({ onBack }) => {
                 <p className="text-sm text-green-600">Enabled</p>
               </div>
             </div>
-            <button className="text-blue-600 font-medium text-sm hover:underline">Manage</button>
+            <button onClick={() => handleFeatureClick('2FA Management')} className="text-blue-600 font-medium text-sm hover:underline">Manage</button>
           </div>
           <div className="flex items-center justify-between pt-4">
             <div className="flex items-center space-x-3">
@@ -38,7 +42,7 @@ const PrivacySecurity: React.FC<PrivacySecurityProps> = ({ onBack }) => {
                 <p className="text-sm text-gray-500">2 active sessions</p>
               </div>
             </div>
-            <button className="text-blue-600 font-medium text-sm hover:underline">View</button>
+            <button onClick={() => handleFeatureClick('Login Sessions')} className="text-blue-600 font-medium text-sm hover:underline">View</button>
           </div>
           <div className="flex items-center justify-between pt-4">
             <div className="flex items-center space-x-3">
@@ -48,7 +52,7 @@ const PrivacySecurity: React.FC<PrivacySecurityProps> = ({ onBack }) => {
                 <p className="text-sm text-gray-500">Visible to all users</p>
               </div>
             </div>
-            <button className="text-blue-600 font-medium text-sm hover:underline">Change</button>
+            <button onClick={() => handleFeatureClick('Profile Visibility')} className="text-blue-600 font-medium text-sm hover:underline">Change</button>
           </div>
           <div className="flex items-center justify-between pt-4">
             <div className="flex items-center space-x-3">
@@ -58,7 +62,7 @@ const PrivacySecurity: React.FC<PrivacySecurityProps> = ({ onBack }) => {
                 <p className="text-sm text-gray-500">3 users blocked</p>
               </div>
             </div>
-            <button className="text-blue-600 font-medium text-sm hover:underline">Manage</button>
+            <button onClick={() => handleFeatureClick('Blocked Users Management')} className="text-blue-600 font-medium text-sm hover:underline">Manage</button>
           </div>
         </div>
       </div>

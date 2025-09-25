@@ -4,15 +4,14 @@ import { Search, Filter, Download, TrendingUp, TrendingDown, Clock, CheckCircle,
 const TransactionHistory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'sent' | 'received' | 'pending' | 'failed'>('all');
-  const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
 
   const transactions = [
     {
       id: 'TXN101',
       name: 'Sneha Reddy',
       upiId: 'sneha@ybl',
+      phone: '9011223344',
       amount: -1850,
-      type: 'sent',
       status: 'completed',
       date: '2025-07-20T14:30:00Z',
       trustScore: 39,
@@ -22,8 +21,8 @@ const TransactionHistory = () => {
       id: 'TXN102',
       name: 'Ramesh Kumar',
       upiId: 'ramesh@ybl',
+      phone: '9876543210',
       amount: 3200,
-      type: 'received',
       status: 'completed',
       date: '2025-07-19T10:15:00Z',
       trustScore: 92,
@@ -33,8 +32,8 @@ const TransactionHistory = () => {
       id: 'TXN103',
       name: 'Vikram Singh',
       upiId: 'vikram@upi',
+      phone: '9090909090',
       amount: -500,
-      type: 'sent',
       status: 'failed',
       date: '2025-07-18T16:45:00Z',
       trustScore: 20,
@@ -44,8 +43,8 @@ const TransactionHistory = () => {
       id: 'TXN104',
       name: 'Arjun Mehta',
       upiId: 'arjun@upi',
+      phone: '9123456789',
       amount: -1200,
-      type: 'sent',
       status: 'pending',
       date: '2025-07-18T09:20:00Z',
       trustScore: 58,
@@ -55,8 +54,8 @@ const TransactionHistory = () => {
       id: 'TXN105',
       name: 'Priya Sharma',
       upiId: 'priya@paytm',
+      phone: '9988776655',
       amount: 750,
-      type: 'received',
       status: 'completed',
       date: '2025-07-17T13:10:00Z',
       trustScore: 76,
@@ -66,8 +65,8 @@ const TransactionHistory = () => {
       id: 'TXN106',
       name: 'Omkar',
       upiId: 'omkar@upi',
+      phone: '9620174461',
       amount: -400,
-      type: 'sent',
       status: 'completed',
       date: '2025-07-16T11:00:00Z',
       trustScore: 40,
@@ -76,53 +75,40 @@ const TransactionHistory = () => {
   ];
 
   const filteredTransactions = transactions.filter(transaction => {
-    const matchesSearch = transaction.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.upiId.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'all' || transaction.status === filterType || 
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    const matchesSearch = searchTerm === '' ||
+                         transaction.name.toLowerCase().includes(lowerSearchTerm) ||
+                         transaction.upiId.toLowerCase().includes(lowerSearchTerm) ||
+                         transaction.phone.includes(searchTerm);
+    const matchesFilter = filterType === 'all' || 
                          (filterType === 'sent' && transaction.amount < 0) ||
-                         (filterType === 'received' && transaction.amount > 0);
+                         (filterType === 'received' && transaction.amount > 0) ||
+                         transaction.status === filterType;
     return matchesSearch && matchesFilter;
   });
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'pending':
-        return <Clock className="h-5 w-5 text-yellow-500" />;
-      case 'failed':
-        return <XCircle className="h-5 w-5 text-red-500" />;
-      default:
-        return <Clock className="h-5 w-5 text-gray-500" />;
+      case 'completed': return <CheckCircle className="h-5 w-5 text-green-500" />;
+      case 'pending': return <Clock className="h-5 w-5 text-yellow-500" />;
+      case 'failed': return <XCircle className="h-5 w-5 text-red-500" />;
+      default: return <Clock className="h-5 w-5 text-gray-500" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
-        return 'text-green-600 bg-green-50';
-      case 'pending':
-        return 'text-yellow-600 bg-yellow-50';
-      case 'failed':
-        return 'text-red-600 bg-red-50';
-      default:
-        return 'text-gray-600 bg-gray-50';
+      case 'completed': return 'text-green-600 bg-green-50';
+      case 'pending': return 'text-yellow-600 bg-yellow-50';
+      case 'failed': return 'text-red-600 bg-red-50';
+      default: return 'text-gray-600 bg-gray-50';
     }
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
-  };
-
-  const handleRefund = (transactionId: string) => {
-    // Handle refund logic
-    console.log('Initiating refund for transaction:', transactionId);
   };
 
   return (
@@ -146,7 +132,7 @@ const TransactionHistory = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by name or UPI ID..."
+              placeholder="Search by name, UPI ID, or phone number..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -165,50 +151,6 @@ const TransactionHistory = () => {
               <option value="pending">Pending</option>
               <option value="failed">Failed</option>
             </select>
-            
-            <button className="flex items-center space-x-2 px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-              <Filter className="h-4 w-4" />
-              <span>More</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Transaction Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Sent</p>
-              <p className="text-2xl font-bold text-red-600">₹3,950</p>
-            </div>
-            <div className="bg-red-100 p-3 rounded-full">
-              <TrendingUp className="h-6 w-6 text-red-600" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Received</p>
-              <p className="text-2xl font-bold text-green-600">₹3,950</p>
-            </div>
-            <div className="bg-green-100 p-3 rounded-full">
-              <TrendingDown className="h-6 w-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Net Balance</p>
-              <p className="text-2xl font-bold text-blue-600">₹0</p>
-            </div>
-            <div className="bg-blue-100 p-3 rounded-full">
-              <RefreshCw className="h-6 w-6 text-blue-600" />
-            </div>
           </div>
         </div>
       </div>
@@ -220,63 +162,53 @@ const TransactionHistory = () => {
         </div>
         
         <div className="divide-y divide-gray-100">
-          {filteredTransactions.map((transaction) => (
-            <div key={transaction.id} className="p-6 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    transaction.amount > 0 ? 'bg-green-100' : 'bg-blue-100'
-                  }`}>
-                    <span className="text-sm font-semibold text-gray-700">
-                      {transaction.name.split(' ').map(n => n[0]).join('')}
-                    </span>
+          {filteredTransactions.length > 0 ? (
+            filteredTransactions.map((transaction) => (
+              <div key={transaction.id} className="p-6 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                      transaction.amount > 0 ? 'bg-green-100' : 'bg-blue-100'
+                    }`}>
+                      <span className="text-sm font-semibold text-gray-700">
+                        {transaction.name.split(' ').map(n => n[0]).join('')}
+                      </span>
+                    </div>
+                    
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2">
+                        <p className="font-semibold text-gray-900">{transaction.name}</p>
+                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
+                          {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600">{transaction.upiId}</p>
+                      <div className="flex items-center space-x-4 mt-1">
+                        <p className="text-xs text-gray-500">{formatDate(transaction.date)}</p>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="flex-1">
+                  <div className="text-right">
                     <div className="flex items-center space-x-2">
-                      <p className="font-semibold text-gray-900">{transaction.name}</p>
-                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
-                        {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
-                      </div>
-                      {transaction.canRefund && (
-                        <button
-                          onClick={() => handleRefund(transaction.id)}
-                          className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full hover:bg-orange-200 transition-colors"
-                        >
-                          Refund Available
-                        </button>
-                      )}
+                      {getStatusIcon(transaction.status)}
+                      <p className={`text-lg font-bold ${
+                        transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {transaction.amount > 0 ? '+' : ''}₹{Math.abs(transaction.amount).toLocaleString('en-IN')}
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-600">{transaction.upiId}</p>
-                    <div className="flex items-center space-x-4 mt-1">
-                      <p className="text-xs text-gray-500">{formatDate(transaction.date)}</p>
-                      <div className="flex items-center space-x-1">
-                        <span className="text-xs text-gray-500">Trust Score:</span>
-                        <span className={`text-xs font-medium ${
-                          transaction.trustScore >= 75 ? 'text-green-600' :
-                          transaction.trustScore >= 50 ? 'text-yellow-600' : 'text-red-600'
-                        }`}>
-                          {transaction.trustScore}%
-                        </span>
-                      </div>
-                    </div>
+                    <p className="text-sm text-gray-500">ID: {transaction.id}</p>
                   </div>
-                </div>
-                
-                <div className="text-right">
-                  <div className="flex items-center space-x-2">
-                    {getStatusIcon(transaction.status)}
-                    <p className={`text-lg font-bold ${
-                      transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {transaction.amount > 0 ? '+' : ''}₹{Math.abs(transaction.amount).toLocaleString('en-IN')}
-                    </p>
-                  </div>
-                  <p className="text-sm text-gray-500">ID: {transaction.id}</p>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="text-center p-10">
+              <p className="text-gray-600">No transactions found for "{searchTerm}".</p>
+              <p className="text-sm text-gray-400 mt-2">Try a different search term or adjust your filters.</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>

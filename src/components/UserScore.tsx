@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Star, TrendingUp, Award, Shield, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Star, TrendingUp, Award, Shield, CheckCircle, Clock } from 'lucide-react';
 
 const UserScore = () => {
-  const [userScore] = useState(78);
+  const [userScore] = useState(85); // Updated score
   const [scoreHistory] = useState([
-    { date: '2024-01-15', score: 78, change: +3, reason: 'Timely repayment' },
-    { date: '2024-01-10', score: 75, change: -2, reason: 'Late payment reported' },
-    { date: '2024-01-05', score: 77, change: +5, reason: 'Trustworthy transaction' },
-    { date: '2024-01-01', score: 72, change: +4, reason: 'Positive feedback' }
+    { date: '2024-01-15', score: 85, change: +3, reason: 'Timely repayment' },
+    { date: '2024-01-05', score: 82, change: +5, reason: 'Trustworthy transaction' },
+    { date: '2024-01-01', score: 77, change: +4, reason: 'Positive feedback' },
+    { date: '2023-12-20', score: 73, change: +2, reason: 'Completed KYC' },
   ]);
 
   const getScoreColor = (score: number) => {
@@ -27,46 +27,14 @@ const UserScore = () => {
     if (score >= 80) return 'Very Good';
     if (score >= 70) return 'Good';
     if (score >= 60) return 'Fair';
-    if (score >= 40) return 'Poor';
-    return 'Very Poor';
+    return 'Poor';
   };
 
   const scoreCategories = [
-    {
-      title: 'Payment History',
-      score: 85,
-      description: 'Timely payments and repayments',
-      icon: Clock,
-      color: 'green'
-    },
-    {
-      title: 'Trust Rating',
-      score: 72,
-      description: 'Based on user feedback and reports',
-      icon: Shield,
-      color: 'yellow'
-    },
-    {
-      title: 'Transaction Volume',
-      score: 90,
-      description: 'Frequency and amount of transactions',
-      icon: TrendingUp,
-      color: 'green'
-    },
-    {
-      title: 'Account Verification',
-      score: 65,
-      description: 'KYC and document verification status',
-      icon: CheckCircle,
-      color: 'yellow'
-    }
-  ];
-
-  const achievements = [
-    { title: 'First Transaction', icon: Star, earned: true, date: '2023-12-01' },
-    { title: 'Trusted User', icon: Shield, earned: true, date: '2024-01-15' },
-    { title: '100 Transactions', icon: Award, earned: false, progress: 67 },
-    { title: 'Perfect Month', icon: CheckCircle, earned: false, progress: 0 }
+    { title: 'Payment History', score: 92, description: 'Timely payments and repayments', icon: Clock, color: 'green' },
+    { title: 'Trust Rating', score: 85, description: 'Based on user feedback', icon: Shield, color: 'green' },
+    { title: 'Transaction Volume', score: 90, description: 'Frequency and amount of transactions', icon: TrendingUp, color: 'green' },
+    { title: 'Account Verification', score: 75, description: 'KYC and document verification status', icon: CheckCircle, color: 'yellow' },
   ];
 
   return (
@@ -86,14 +54,10 @@ const UserScore = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">{getScoreLabel(userScore)}</h2>
           <p className="text-gray-600 mb-6">Your current trust score is in the "{getScoreLabel(userScore).toLowerCase()}" range</p>
           
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-2 gap-4 text-center">
             <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-2xl font-bold text-green-600">23</p>
+              <p className="text-2xl font-bold text-green-600">32</p>
               <p className="text-sm text-gray-600">Positive Points</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-2xl font-bold text-red-600">5</p>
-              <p className="text-sm text-gray-600">Negative Points</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-2xl font-bold text-blue-600">156</p>
@@ -110,12 +74,10 @@ const UserScore = () => {
           {scoreCategories.map((category, index) => (
             <div key={index} className="flex items-center space-x-4">
               <div className={`p-3 rounded-full ${
-                category.color === 'green' ? 'bg-green-100' :
-                category.color === 'yellow' ? 'bg-yellow-100' : 'bg-red-100'
+                category.color === 'green' ? 'bg-green-100' : 'bg-yellow-100'
               }`}>
                 <category.icon className={`h-6 w-6 ${
-                  category.color === 'green' ? 'text-green-600' :
-                  category.color === 'yellow' ? 'text-yellow-600' : 'text-red-600'
+                  category.color === 'green' ? 'text-green-600' : 'text-yellow-600'
                 }`} />
               </div>
               <div className="flex-1">
@@ -129,8 +91,7 @@ const UserScore = () => {
                 <div className="mt-2 bg-gray-200 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full bg-gradient-to-r ${
-                      category.color === 'green' ? 'from-green-400 to-green-600' :
-                      category.color === 'yellow' ? 'from-yellow-400 to-yellow-600' : 'from-red-400 to-red-600'
+                      category.color === 'green' ? 'from-green-400 to-green-600' : 'from-yellow-400 to-yellow-600'
                     }`}
                     style={{ width: `${category.score}%` }}
                   />
@@ -148,13 +109,8 @@ const UserScore = () => {
           {scoreHistory.map((entry, index) => (
             <div key={index} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
               <div className="flex items-center space-x-3">
-                <div className={`p-2 rounded-full ${
-                  entry.change > 0 ? 'bg-green-100' : 'bg-red-100'
-                }`}>
-                  {entry.change > 0 ? 
-                    <TrendingUp className="h-4 w-4 text-green-600" /> :
-                    <AlertTriangle className="h-4 w-4 text-red-600" />
-                  }
+                <div className="p-2 rounded-full bg-green-100">
+                  <TrendingUp className="h-4 w-4 text-green-600" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">{entry.reason}</p>
@@ -164,85 +120,14 @@ const UserScore = () => {
                 </div>
               </div>
               <div className="text-right">
-                <p className={`font-bold ${entry.change > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {entry.change > 0 ? '+' : ''}{entry.change}
+                <p className="font-bold text-green-600">
+                  +{entry.change}
                 </p>
                 <p className="text-sm text-gray-500">Score: {entry.score}</p>
               </div>
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Achievements */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Achievements</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {achievements.map((achievement, index) => (
-            <div key={index} className={`p-4 rounded-lg border-2 ${
-              achievement.earned 
-                ? 'border-green-200 bg-green-50' 
-                : 'border-gray-200 bg-gray-50'
-            }`}>
-              <div className="flex items-center space-x-3">
-                <div className={`p-2 rounded-full ${
-                  achievement.earned ? 'bg-green-100' : 'bg-gray-100'
-                }`}>
-                  <achievement.icon className={`h-5 w-5 ${
-                    achievement.earned ? 'text-green-600' : 'text-gray-400'
-                  }`} />
-                </div>
-                <div className="flex-1">
-                  <h4 className={`font-semibold ${
-                    achievement.earned ? 'text-green-900' : 'text-gray-700'
-                  }`}>
-                    {achievement.title}
-                  </h4>
-                  {achievement.earned ? (
-                    <p className="text-sm text-green-600">
-                      Earned on {new Date(achievement.date!).toLocaleDateString('en-IN')}
-                    </p>
-                  ) : (
-                    <div>
-                      <p className="text-sm text-gray-600">
-                        Progress: {achievement.progress}%
-                      </p>
-                      <div className="mt-1 bg-gray-200 rounded-full h-2">
-                        <div
-                          className="h-2 rounded-full bg-blue-500"
-                          style={{ width: `${achievement.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Tips to Improve Score */}
-      <div className="bg-blue-50 rounded-2xl p-6">
-        <h3 className="text-lg font-semibold text-blue-900 mb-4">Tips to Improve Your Score</h3>
-        <ul className="space-y-2 text-blue-800">
-          <li className="flex items-start space-x-2">
-            <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
-            <span>Make timely repayments and honor your commitments</span>
-          </li>
-          <li className="flex items-start space-x-2">
-            <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
-            <span>Maintain regular transaction activity</span>
-          </li>
-          <li className="flex items-start space-x-2">
-            <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
-            <span>Complete your KYC verification</span>
-          </li>
-          <li className="flex items-start space-x-2">
-            <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
-            <span>Build positive relationships with other users</span>
-          </li>
-        </ul>
       </div>
     </div>
   );

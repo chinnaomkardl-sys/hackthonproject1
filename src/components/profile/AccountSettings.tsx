@@ -6,6 +6,10 @@ interface AccountSettingsProps {
 }
 
 const AccountSettings: React.FC<AccountSettingsProps> = ({ onBack }) => {
+  const handleFeatureClick = (featureName: string) => {
+    alert(`${featureName} feature is under development. This is a placeholder action.`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
@@ -28,7 +32,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ onBack }) => {
                 <p className="text-sm text-gray-500">Last changed 3 months ago</p>
               </div>
             </div>
-            <button className="text-blue-600 font-medium text-sm hover:underline">Change</button>
+            <button onClick={() => handleFeatureClick('Change Password')} className="text-blue-600 font-medium text-sm hover:underline">Change</button>
           </div>
           <div className="flex items-center justify-between pt-4">
             <div className="flex items-center space-x-3">
@@ -38,7 +42,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ onBack }) => {
                 <p className="text-sm text-gray-500">+91 •••• ••••61</p>
               </div>
             </div>
-            <button className="text-blue-600 font-medium text-sm hover:underline">Edit</button>
+            <button onClick={() => handleFeatureClick('Edit Phone Number')} className="text-blue-600 font-medium text-sm hover:underline">Edit</button>
           </div>
           <div className="flex items-center justify-between pt-4">
             <div className="flex items-center space-x-3">
@@ -48,7 +52,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ onBack }) => {
                 <p className="text-sm text-gray-500">English (US)</p>
               </div>
             </div>
-            <button className="text-blue-600 font-medium text-sm hover:underline">Select</button>
+            <button onClick={() => handleFeatureClick('Select Language')} className="text-blue-600 font-medium text-sm hover:underline">Select</button>
           </div>
         </div>
       </div>

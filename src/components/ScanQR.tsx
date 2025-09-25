@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ArrowLeft, QrCode, Camera, Upload, Flashlight, RotateCcw } from 'lucide-react';
+import { knownUsers } from '../data/knownUsers';
 
 interface ScanQRProps {
   onBack: () => void;
@@ -12,33 +13,37 @@ const ScanQR: React.FC<ScanQRProps> = ({ onBack, onSendMoney }) => {
   const [amount, setAmount] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Simulate QR scan
+  // Simulate QR scan with valid data
   const handleStartScan = () => {
     setIsScanning(true);
-    // Simulate scanning delay
     setTimeout(() => {
+      // Pick a random user from the known users list to ensure data consistency
+      const randomUser = knownUsers[Math.floor(Math.random() * knownUsers.length)];
       const mockQRData = {
-        name: 'John Doe',
-        upi: 'john.doe@paytm',
-        amount: '500' // Pre-filled amount from QR
+        name: randomUser.user_name,
+        upi: randomUser.upi_ids[0], // Use the first UPI ID
+        amount: '' // Let the user enter the amount
       };
       setScannedData(mockQRData);
       setAmount(mockQRData.amount);
       setIsScanning(false);
-    }, 3000);
+    }, 2000);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       // Simulate QR code reading from image
+      setIsScanning(true);
       setTimeout(() => {
+        const randomUser = knownUsers[Math.floor(Math.random() * knownUsers.length)];
         const mockQRData = {
-          name: 'Alice Smith',
-          upi: 'alice.smith@gpay',
+          name: randomUser.user_name,
+          upi: randomUser.upi_ids[0],
           amount: ''
         };
         setScannedData(mockQRData);
+        setIsScanning(false);
       }, 1000);
     }
   };
@@ -132,30 +137,10 @@ const ScanQR: React.FC<ScanQRProps> = ({ onBack, onSendMoney }) => {
               )}
             </div>
           </div>
-
-          {/* Instructions */}
-          <div className="bg-blue-50 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-blue-900 mb-3">How to Scan</h3>
-            <ul className="space-y-2 text-blue-800">
-              <li className="flex items-start space-x-2">
-                <span className="w-5 h-5 bg-blue-200 rounded-full flex items-center justify-center text-xs font-bold text-blue-800 mt-0.5">1</span>
-                <span>Point your camera at the QR code</span>
-              </li>
-              <li className="flex items-start space-x-2">
-                <span className="w-5 h-5 bg-blue-200 rounded-full flex items-center justify-center text-xs font-bold text-blue-800 mt-0.5">2</span>
-                <span>Make sure the QR code is clearly visible</span>
-              </li>
-              <li className="flex items-start space-x-2">
-                <span className="w-5 h-5 bg-blue-200 rounded-full flex items-center justify-center text-xs font-bold text-blue-800 mt-0.5">3</span>
-                <span>Wait for automatic detection</span>
-              </li>
-            </ul>
-          </div>
         </>
       ) : (
         /* Payment Confirmation */
         <div className="space-y-6">
-          {/* Scanned Details */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Payment Details</h3>
@@ -192,6 +177,7 @@ const ScanQR: React.FC<ScanQRProps> = ({ onBack, onSendMoney }) => {
                     placeholder="0.00"
                     className="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     required
+                    autoFocus
                   />
                 </div>
               </div>
@@ -204,17 +190,6 @@ const ScanQR: React.FC<ScanQRProps> = ({ onBack, onSendMoney }) => {
                 Pay ₹{amount || '0'}
               </button>
             </div>
-          </div>
-
-          {/* Security Info */}
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-            <div className="flex items-center space-x-2">
-              <QrCode className="h-5 w-5 text-green-600" />
-              <p className="text-sm font-medium text-green-800">QR Code Verified</p>
-            </div>
-            <p className="text-sm text-green-700 mt-1">
-              This QR code has been verified and is safe to use for payment.
-            </p>
           </div>
         </div>
       )}
