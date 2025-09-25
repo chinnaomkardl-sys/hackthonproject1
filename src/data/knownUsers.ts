@@ -71,5 +71,15 @@ export const knownUsers: KnownUser[] = [
     ],
     "score": 20,
     "msg": "Fraudulent – Reported multiple times, BLOCKED"
+  },
+  {
+    "user_name": "Omkar",
+    "upi_number": "9620174461",
+    "upi_ids": [
+      "omkar@upi",
+      "9620174461@ybl"
+    ],
+    "score": 40,
+    "msg": "High Risk – This user has been reported for suspicious activity."
   }
 ];

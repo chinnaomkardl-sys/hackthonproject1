@@ -1,24 +1,25 @@
 import React, { useState } from 'react';
 import { Send, QrCode, CreditCard, Plus, ArrowRight, Wallet, Star } from 'lucide-react';
+import { useToast } from '../contexts/ToastContext';
 
 interface DashboardProps {
-  onSendMoney: (recipient: string, amount: number) => boolean;
   onNavigate: (view: string) => void;
   onViewPersonHistory: (personName: string) => void;
   onNavigateToScoreTab: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onSendMoney, onNavigate, onViewPersonHistory, onNavigateToScoreTab }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onViewPersonHistory, onNavigateToScoreTab }) => {
   const [balance] = useState(25420.50);
   const userTrustScore = 78;
+  const { showToast } = useToast();
 
   const handleAddMoney = () => {
     const reloadAmount = Math.floor(Math.random() * 5000) + 1000;
-    alert(`This is a demo. A real app would initiate adding money. Mock amount: ₹${reloadAmount.toFixed(2)}`);
+    showToast(`This is a demo. Mock amount: ₹${reloadAmount.toFixed(2)}`, 'info');
   };
 
   const handleCheckBalance = () => {
-    alert(`Your available balance is: ₹${balance.toLocaleString('en-IN')}`);
+    showToast(`Your available balance is: ₹${balance.toLocaleString('en-IN')}`, 'info');
   };
 
   const recentTransactions = [
@@ -107,7 +108,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onSendMoney, onNavigate, onViewPe
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Recent Transactions</h3>
-          <button onClick={() => alert('Navigating to all transactions...')} className="text-blue-600 text-sm font-medium hover:text-blue-700">View All</button>
+          <button onClick={() => showToast('Navigating to all transactions...', 'info')} className="text-blue-600 text-sm font-medium hover:text-blue-700">View All</button>
         </div>
         
         <div className="space-y-3">

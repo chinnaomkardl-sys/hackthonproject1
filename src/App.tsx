@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Clock, HelpCircle, Star, AlertTriangle, Shield } from 'lucide-react';
+import { Home, Clock, HelpCircle, Star, AlertTriangle, Shield, User } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import TransactionHistory from './components/TransactionHistory';
 import Help from './components/Help';
@@ -10,13 +10,20 @@ import SendMoney from './components/SendMoney';
 import ScanQR from './components/ScanQR';
 import PayBills from './components/PayBills';
 import PersonTransactionHistory from './components/PersonTransactionHistory';
+import Profile from './components/Profile';
 import { supabase } from './lib/supabase';
 import { knownUsers } from './data/knownUsers';
+import { useToast } from './contexts/ToastContext';
+import EditProfile from './components/profile/EditProfile';
+import AccountSettings from './components/profile/AccountSettings';
+import Notifications from './components/profile/Notifications';
+import PrivacySecurity from './components/profile/PrivacySecurity';
 
 // Define a more descriptive return type for the send money handler
 interface SendMoneyResult {
   success: boolean;
   userFound: boolean;
+  error?: string; // Add optional error message for DB issues
 }
 
 function App() {
@@ -24,7 +31,9 @@ function App() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertData, setAlertData] = useState({ recipient: '', trustScore: 0, message: '' });
   const [currentView, setCurrentView] = useState('dashboard');
+  const [profileView, setProfileView] = useState('main');
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   const handleSendMoney = async (recipient: string, amount: number): Promise<SendMoneyResult> => {
     // 1. Check local known users list first
@@ -39,7 +48,7 @@ function App() {
         return { success: false, userFound: true }; // Stop transaction, user was found
       }
       // If score is good, proceed
-      console.log(`Transaction of ${amount} to ${recipient} approved.`);
+      showToast(`Transaction of ₹${amount} to ${recipient} approved.`, 'success');
       return { success: true, userFound: true };
     }
 
@@ -52,7 +61,8 @@ function App() {
 
     if (error && error.code !== 'PGRST116') { // PGRST116: 'single' row not found
       console.error('Error fetching profile:', error);
-      // Let it fall through to the "not found" case
+      // Return a specific error message to be displayed to the user
+      return { success: false, userFound: false, error: 'A database error occurred. Please try again later.' };
     }
 
     if (profile) {
@@ -66,7 +76,7 @@ function App() {
         return { success: false, userFound: true }; // Stop transaction, user was found
       }
       // If score is good, proceed
-      console.log(`Transaction of ${amount} to ${recipient} approved.`);
+      showToast(`Transaction of ₹${amount} to ${recipient} approved.`, 'success');
       return { success: true, userFound: true };
     }
     
@@ -83,6 +93,21 @@ function App() {
     setCurrentView('dashboard');
     setSelectedPerson(null);
   };
+
+  const handleProfileNavigation = (view: string) => {
+    setProfileView(view);
+  };
+  
+  const handleBackToProfile = () => {
+    setProfileView('main');
+  };
+
+  const handleLogout = () => {
+    showToast('You have been logged out.', 'info');
+    setActiveTab('home');
+    setCurrentView('dashboard');
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
@@ -97,7 +122,6 @@ function App() {
             return <PersonTransactionHistory personName={selectedPerson!} onBack={handleBackToDashboard} />;
           default:
             return <Dashboard 
-              onSendMoney={async (r, a) => (await handleSendMoney(r, a)).success} 
               onNavigate={setCurrentView}
               onViewPersonHistory={handleViewPersonHistory}
               onNavigateToScoreTab={() => setActiveTab('score')}
@@ -109,11 +133,23 @@ function App() {
         return <UserScore />;
       case 'report':
         return <ReportUser />;
+      case 'profile':
+        switch (profileView) {
+          case 'edit-profile':
+            return <EditProfile onBack={handleBackToProfile} />;
+          case 'account-settings':
+            return <AccountSettings onBack={handleBackToProfile} />;
+          case 'notifications':
+            return <Notifications onBack={handleBackToProfile} />;
+          case 'privacy-security':
+            return <PrivacySecurity onBack={handleBackToProfile} />;
+          default:
+            return <Profile onNavigate={handleProfileNavigation} onLogout={handleLogout} />;
+        }
       case 'help':
         return <Help />;
       default:
         return <Dashboard 
-          onSendMoney={async (r, a) => (await handleSendMoney(r, a)).success} 
           onNavigate={setCurrentView}
           onViewPersonHistory={handleViewPersonHistory}
           onNavigateToScoreTab={() => setActiveTab('score')}
@@ -146,24 +182,29 @@ function App() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
         {renderContent()}
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-2 z-10">
         <div className="flex justify-around items-center max-w-md mx-auto">
           {[
             { id: 'home', icon: Home, label: 'Home' },
             { id: 'history', icon: Clock, label: 'History' },
             { id: 'score', icon: Star, label: 'Score' },
             { id: 'report', icon: AlertTriangle, label: 'Report', notification: true },
-            { id: 'help', icon: HelpCircle, label: 'Help' }
+            { id: 'profile', icon: User, label: 'Profile' },
           ].map(({ id, icon: Icon, label, notification }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id)}
-              className={`relative flex flex-col items-center space-y-1 p-2 rounded-lg transition-all duration-200 ${
+              onClick={() => {
+                setActiveTab(id);
+                // Reset views when switching tabs
+                setCurrentView('dashboard');
+                setProfileView('main');
+              }}
+              className={`relative flex flex-col items-center space-y-1 p-2 rounded-lg transition-all duration-200 w-16 ${
                 activeTab === id
                   ? 'text-blue-600 bg-blue-50'
                   : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
@@ -171,8 +212,8 @@ function App() {
             >
               <Icon className="h-5 w-5" />
               <span className="text-xs font-medium">{label}</span>
-              {notification && (
-                <span className="absolute top-1 right-1 flex h-3 w-3">
+              {notification && id === 'report' && (
+                <span className="absolute top-1 right-3 flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                 </span>
@@ -191,23 +232,10 @@ function App() {
           onClose={() => setShowAlert(false)}
           onProceed={() => {
             setShowAlert(false);
-            // Handle proceeding with transaction
-            alert('Transaction proceeded despite warning.');
+            showToast('Transaction proceeded despite warning.', 'info');
           }}
         />
       )}
-
-      {/* Footer Logo */}
-      <footer className="bg-white border-t border-gray-200 py-4 pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center">
-            <div className="flex items-center space-x-2 text-gray-500">
-              <Shield className="h-5 w-5" />
-              <span className="text-sm font-medium">Powered by SecurePay</span>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

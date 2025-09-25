@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Send, QrCode, Smartphone, User, CreditCard, AlertTriangle } from 'lucide-react';
+import { useToast } from '../contexts/ToastContext';
 
 interface SendMoneyResult {
   success: boolean;
   userFound: boolean;
+  error?: string; // Add optional error message
 }
 
 interface SendMoneyProps {
@@ -17,6 +19,7 @@ const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const { showToast } = useToast();
 
   const quickAmounts = [100, 500, 1000, 2000, 5000, 10000];
 
@@ -29,18 +32,18 @@ const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
     const result = await onSendMoney(recipient, parseFloat(amount));
     
     if (result.success) {
-      // Show success message only if the transaction wasn't flagged and was successful
-      alert(`₹${amount} sent successfully to ${recipient}`);
+      showToast(`₹${amount} sent successfully to ${recipient}`, 'success');
       setRecipient('');
       setAmount('');
       setNote('');
       onBack();
+    } else if (result.error) {
+      showToast(`Error: ${result.error}`, 'error');
     } else if (!result.userFound) {
-      // If the user was not found, show a specific error message
-      alert('Recipient not found. Please check the UPI ID or phone number and try again.');
+      showToast('Recipient not found. Please check the UPI ID or phone number.', 'error');
     }
-    // If the user was found but the transaction failed (due to low score alert),
-    // the modal is already handled in App.tsx, so we do nothing here.
+    // If the user was found but the transaction was flagged for a low score,
+    // the AlertModal is handled in App.tsx, so no action is needed here.
     
     setIsProcessing(false);
   };
@@ -85,9 +88,7 @@ const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
               key={id}
               onClick={() => {
                 if (id === 'qr') {
-                  // In a real app, this would open the QR scanner view.
-                  // We direct users to the dashboard for a better experience.
-                  alert("Please use the 'Scan QR' option from the dashboard for a full experience.");
+                  showToast("Use 'Scan QR' from the dashboard.", 'info');
                   setPaymentMethod(null);
                 } else {
                   setPaymentMethod(id);
