@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Send, QrCode, CreditCard, ArrowRight, Wallet, Star } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 
@@ -9,8 +9,8 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onViewPersonHistory, onNavigateToProfileTab }) => {
-  const balance = 25420.50;
-  const userTrustScore = 78;
+  const [balance] = useState(25420.50);
+  const userTrustScore = 82;
   const { showToast } = useToast();
 
   const handleCheckBalance = () => {
@@ -36,7 +36,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onViewPersonHistory, 
               onClick={onNavigateToProfileTab}
               className="bg-blue-500 hover:bg-blue-400 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
             >
-              My Profile
+              View My Profile
             </button>
           </div>
         </div>
@@ -84,9 +84,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onViewPersonHistory, 
           <p className="text-sm font-semibold text-gray-900">Check Balance</p>
         </button>
       </div>
-
-      {/* This section has been removed as per your request */}
-      {/* <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"> ... </div> */}
     </div>
   );
 };

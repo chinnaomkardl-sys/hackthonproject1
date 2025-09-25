@@ -1,49 +1,50 @@
 import React, { useState } from 'react';
 import Login from './Login';
 import Register from './Register';
-import PhoneLogin from './PhoneLogin';
-import { Mail, Phone } from 'lucide-react';
+import { Shield } from 'lucide-react';
 
-const Auth: React.FC = () => {
-  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
-  const [view, setView] = useState<'login' | 'register'>('login');
+interface AuthProps {
+  onLogin: (email: string, pass: string) => boolean;
+  onRegister: (name: string, email: string, pass: string) => void;
+}
 
-  const renderEmailAuth = () => {
-    if (view === 'login') {
-      return <Login onSwitchToRegister={() => setView('register')} />;
-    }
-    return <Register onSwitchToLogin={() => setView('login')} />;
-  };
+const Auth: React.FC<AuthProps> = ({ onLogin, onRegister }) => {
+  const [isLoginView, setIsLoginView] = useState(true);
 
   return (
-    <div className="w-full max-w-md">
-      <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 space-y-6">
-        <div className="flex justify-center border-b border-gray-200">
-          <button
-            onClick={() => setAuthMethod('email')}
-            className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium transition-colors ${
-              authMethod === 'email'
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <Mail className="h-5 w-5" />
-            <span>Email & Password</span>
-          </button>
-          <button
-            onClick={() => setAuthMethod('phone')}
-            className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium transition-colors ${
-              authMethod === 'phone'
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <Phone className="h-5 w-5" />
-            <span>Phone OTP</span>
-          </button>
+    <div className="min-h-screen bg-rose-50 flex flex-col justify-center items-center p-4">
+      <div className="max-w-md w-full">
+        <div className="flex justify-center items-center space-x-3 mb-8">
+            <div className="bg-blue-600 p-2 rounded-lg">
+                <Shield className="h-8 w-8 text-white" />
+            </div>
+            <div>
+                <h1 className="text-3xl font-bold text-gray-900">SecurePay</h1>
+                <p className="text-sm text-gray-500">Secure & Trusted Payments</p>
+            </div>
         </div>
+        
+        <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+          {isLoginView ? (
+            <Login onLogin={onLogin} />
+          ) : (
+            <Register onRegister={onRegister} />
+          )}
 
-        {authMethod === 'email' ? renderEmailAuth() : <PhoneLogin />}
+          <div className="text-center mt-6">
+            <button
+              onClick={() => setIsLoginView(!isLoginView)}
+              className="text-sm font-medium text-blue-600 hover:underline"
+            >
+              {isLoginView
+                ? "Don't have an account? Register"
+                : 'Already have an account? Login'}
+            </button>
+          </div>
+        </div>
+        <p className="text-center text-xs text-gray-500 mt-4">
+            Note: Supabase is not connected. User registration is for demo purposes and data will not be saved.
+        </p>
       </div>
     </div>
   );

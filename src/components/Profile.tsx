@@ -1,21 +1,19 @@
 import React from 'react';
 import { User, Shield, Settings, Bell, Lock, LogOut, ChevronRight } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+
+interface User {
+  name: string;
+  upiId: string;
+}
 
 interface ProfileProps {
+  user: User;
   onNavigate: (view: string) => void;
   onLogout: () => void;
 }
 
-const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
-  const { user } = useAuth();
-
-  const profile = {
-    name: user?.user_metadata.name || user?.email?.split('@')[0] || 'User',
-    upiId: user?.user_metadata.upi_id || user?.email || 'no-email@securepay',
-    avatar: (user?.user_metadata.name || user?.email || 'U')[0].toUpperCase(),
-    trustScore: 78, // This would come from the profile table in a real app
-  };
+const Profile: React.FC<ProfileProps> = ({ user, onNavigate, onLogout }) => {
+  const userTrustScore = 82;
 
   const menuItems = [
     { id: 'edit-profile', label: 'Edit Profile', icon: User },
@@ -30,7 +28,7 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
       <div className="flex flex-col items-center space-y-4">
         <div className="relative">
           <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
-            <span className="text-4xl font-bold text-white">{profile.avatar}</span>
+            <span className="text-4xl font-bold text-white">{user.name.charAt(0).toUpperCase()}</span>
           </div>
           <button 
             onClick={() => onNavigate('edit-profile')}
@@ -40,8 +38,8 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
           </button>
         </div>
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">{profile.name}</h1>
-          <p className="text-gray-600">{profile.upiId}</p>
+          <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
+          <p className="text-gray-600">{user.upiId}</p>
         </div>
       </div>
 
@@ -58,8 +56,8 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
             </div>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-green-600">{profile.trustScore}</p>
-            <p className="text-sm text-green-600">Excellent</p>
+            <p className="text-2xl font-bold text-green-600">{userTrustScore}</p>
+            <p className="text-sm text-green-600">Very Good</p>
           </div>
         </div>
       </div>

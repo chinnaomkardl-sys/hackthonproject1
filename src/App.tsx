@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Clock, Star, AlertTriangle, Shield, User as UserIcon } from 'lucide-react';
+import { Home, Clock, Star, AlertTriangle, User } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import TransactionHistory from './components/TransactionHistory';
 import Help from './components/Help';
@@ -18,7 +18,6 @@ import EditProfile from './components/profile/EditProfile';
 import AccountSettings from './components/profile/AccountSettings';
 import Notifications from './components/profile/Notifications';
 import PrivacySecurity from './components/profile/PrivacySecurity';
-import { useAuth } from './contexts/AuthContext';
 import Auth from './components/auth/Auth';
 
 interface SendMoneyResult {
@@ -27,8 +26,16 @@ interface SendMoneyResult {
   error?: string;
 }
 
+interface CurrentUser {
+  name: string;
+  email: string;
+  upiId: string;
+}
+
 function App() {
-  const { session, logout } = useAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+
   const [activeTab, setActiveTab] = useState('home');
   const [showAlert, setShowAlert] = useState(false);
   const [alertData, setAlertData] = useState({ recipient: '', trustScore: 0, message: '' });
@@ -36,6 +43,42 @@ function App() {
   const [profileView, setProfileView] = useState('main');
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
   const { showToast } = useToast();
+
+  const handleLogin = (email: string, pass: string): boolean => {
+    if (email.toLowerCase() === 'chinnaomkardl@gmail.com' && pass === 'omkar') {
+      const user: CurrentUser = {
+        name: 'Omkar',
+        email: 'chinnaomkardl@gmail.com',
+        upiId: 'omkar@securepay',
+      };
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+      showToast('Login successful!', 'success');
+      return true;
+    }
+    showToast('Invalid credentials or user not registered.', 'error');
+    return false;
+  };
+
+  const handleRegister = (name: string, email: string, pass: string) => {
+    // This is a mock registration. In a real app, you'd save this to your database.
+    const newUser: CurrentUser = {
+      name,
+      email,
+      upiId: `${name.toLowerCase().split(' ')[0]}@securepay`,
+    };
+    setCurrentUser(newUser);
+    setIsAuthenticated(true);
+    showToast(`Welcome, ${name}! Registration successful.`, 'success');
+  };
+  
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    showToast('You have been logged out.', 'info');
+    setActiveTab('home');
+    setCurrentView('dashboard');
+  };
 
   const handleSendMoney = async (recipient: string, amount: number): Promise<SendMoneyResult> => {
     const knownUser = knownUsers.find(
@@ -98,12 +141,6 @@ function App() {
     setProfileView('main');
   };
 
-  const handleLogout = async () => {
-    await logout();
-    setActiveTab('home');
-    setCurrentView('dashboard');
-  };
-
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
@@ -130,9 +167,10 @@ function App() {
       case 'report':
         return <ReportUser />;
       case 'profile':
+        if (!currentUser) return null;
         switch (profileView) {
           case 'edit-profile':
-            return <EditProfile onBack={handleBackToProfile} />;
+            return <EditProfile user={currentUser} onBack={handleBackToProfile} onSave={(updatedUser) => setCurrentUser(updatedUser)} />;
           case 'account-settings':
             return <AccountSettings onBack={handleBackToProfile} />;
           case 'notifications':
@@ -140,7 +178,7 @@ function App() {
           case 'privacy-security':
             return <PrivacySecurity onBack={handleBackToProfile} />;
           default:
-            return <Profile onNavigate={handleProfileNavigation} onLogout={handleLogout} />;
+            return <Profile user={currentUser} onNavigate={handleProfileNavigation} onLogout={handleLogout} />;
         }
       case 'help':
         return <Help />;
@@ -153,12 +191,8 @@ function App() {
     }
   };
 
-  if (!session) {
-    return (
-      <div className="min-h-screen bg-rose-50 flex items-center justify-center p-4">
-        <Auth />
-      </div>
-    );
+  if (!isAuthenticated) {
+    return <Auth onLogin={handleLogin} onRegister={handleRegister} />;
   }
 
   return (
@@ -168,7 +202,7 @@ function App() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <div className="bg-blue-600 p-2 rounded-lg">
-                <Shield className="h-8 w-8 text-white" />
+                <AlertTriangle className="h-8 w-8 text-white" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">SecurePay</h1>
@@ -195,7 +229,7 @@ function App() {
             { id: 'history', icon: Clock, label: 'History' },
             { id: 'score', icon: Star, label: 'Score' },
             { id: 'report', icon: AlertTriangle, label: 'Report', notification: true },
-            { id: 'profile', icon: UserIcon, label: 'Profile' },
+            { id: 'profile', icon: User, label: 'Profile' },
           ].map(({ id, icon: Icon, label, notification }) => (
             <button
               key={id}

@@ -1,85 +1,47 @@
 import React, { useState } from 'react';
 import { Mail, Lock, LogIn } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
 
 interface LoginProps {
-  onSwitchToRegister: () => void;
+  onLogin: (email: string, pass: string) => boolean;
 }
 
-const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const [email, setEmail] = useState('chinnaomkardl@gmail.com');
+  const [password, setPassword] = useState('omkar');
   const [isProcessing, setIsProcessing] = useState(false);
-  const { login } = useAuth();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
-    await login(email, password);
-    setIsProcessing(false);
+    const success = onLogin(email, password);
+    if (!success) {
+      setIsProcessing(false);
+    }
   };
 
   return (
-    <div className="space-y-6 pt-6">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
-        <p className="text-gray-600">Log in to your SecurePay account</p>
-      </div>
-
-      <form onSubmit={handleLogin} className="space-y-4">
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-center text-gray-900">Welcome Back!</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input 
-              type="email" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com" 
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-              required 
-            />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
           </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input 
-              type="password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••" 
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-              required 
-            />
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
           </div>
         </div>
-        <button 
-          type="submit" 
-          disabled={isProcessing}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors flex items-center justify-center space-x-2"
-        >
-          {isProcessing ? (
-            <>
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              <span>Logging in...</span>
-            </>
-          ) : (
-            <>
-              <LogIn className="h-5 w-5" />
-              <span>Login</span>
-            </>
-          )}
+        <button type="submit" disabled={isProcessing} className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors font-semibold disabled:bg-gray-400">
+          {isProcessing ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <LogIn className="h-5 w-5" />}
+          <span>{isProcessing ? 'Logging in...' : 'Login'}</span>
         </button>
       </form>
-
-      <p className="text-center text-sm text-gray-600">
-        Don't have an account?{' '}
-        <button onClick={onSwitchToRegister} className="font-medium text-blue-600 hover:underline">
-          Register here
-        </button>
-      </p>
     </div>
   );
 };
