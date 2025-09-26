@@ -7,7 +7,7 @@ import UserScore from './components/UserScore';
 import ReportUser from './components/ReportUser';
 import AlertModal from './components/AlertModal';
 import SendMoney from './components/SendMoney';
-import ScanQR from './components/ScanQR';
+import ScanAndPay from './components/ScanAndPay';
 import PayBills from './components/PayBills';
 import PersonTransactionHistory from './components/PersonTransactionHistory';
 import Profile from './components/Profile';
@@ -19,12 +19,9 @@ import AccountSettings from './components/profile/AccountSettings';
 import Notifications from './components/profile/Notifications';
 import PrivacySecurity from './components/profile/PrivacySecurity';
 import Auth from './components/auth/Auth';
-
-interface SendMoneyResult {
-  success: boolean;
-  userFound: boolean;
-  error?: string;
-}
+import ConfirmPayment from './components/ConfirmPayment';
+import PaymentSuccessModal from './components/PaymentSuccessModal';
+import AIChatbot from './components/profile/AIChatbot';
 
 interface CurrentUser {
   name: string;
@@ -44,6 +41,10 @@ function App() {
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
   const { showToast } = useToast();
 
+  const [paymentDetails, setPaymentDetails] = useState<{ recipient: string; amount: number; recipientName: string } | null>(null);
+  const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false);
+  const [initialRecipient, setInitialRecipient] = useState<string | undefined>(undefined);
+
   const handleLogin = (email: string, pass: string): boolean => {
     if (email.toLowerCase() === 'chinnaomkardl@gmail.com' && pass === 'omkar') {
       const user: CurrentUser = {
@@ -61,7 +62,6 @@ function App() {
   };
 
   const handleRegister = (name: string, email: string, pass: string) => {
-    // This is a mock registration. In a real app, you'd save this to your database.
     const newUser: CurrentUser = {
       name,
       email,
@@ -80,7 +80,12 @@ function App() {
     setCurrentView('dashboard');
   };
 
-  const handleSendMoney = async (recipient: string, amount: number): Promise<SendMoneyResult> => {
+  const proceedToConfirm = (recipient: string, recipientName: string, amount: number) => {
+    setPaymentDetails({ recipient, amount, recipientName });
+    setCurrentView('confirm-payment');
+  };
+
+  const handleInitiatePayment = async (recipient: string, amount: number): Promise<void> => {
     const knownUser = knownUsers.find(
       (user) => user.upi_ids.includes(recipient.toLowerCase()) || user.upi_number === recipient
     );
@@ -88,11 +93,12 @@ function App() {
     if (knownUser) {
       if (knownUser.score < 80) {
         setAlertData({ recipient: knownUser.user_name, trustScore: knownUser.score, message: knownUser.msg });
+        setPaymentDetails({ recipient, amount, recipientName: knownUser.user_name });
         setShowAlert(true);
-        return { success: false, userFound: true };
+      } else {
+        proceedToConfirm(recipient, knownUser.user_name, amount);
       }
-      showToast(`Transaction of ₹${amount} to ${recipient} approved.`, 'success');
-      return { success: true, userFound: true };
+      return;
     }
 
     const { data: profile, error } = await supabase
@@ -103,7 +109,8 @@ function App() {
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching profile:', error);
-      return { success: false, userFound: false, error: 'A database error occurred. Please try again later.' };
+      showToast('A database error occurred. Please try again later.', 'error');
+      return;
     }
 
     if (profile) {
@@ -113,14 +120,27 @@ function App() {
           trustScore: profile.score,
           message: `This user has a low trust score of ${profile.score}. Proceed with caution.`,
         });
+        setPaymentDetails({ recipient, amount, recipientName: profile.name });
         setShowAlert(true);
-        return { success: false, userFound: true };
+      } else {
+        proceedToConfirm(recipient, profile.name, amount);
       }
-      showToast(`Transaction of ₹${amount} to ${recipient} approved.`, 'success');
-      return { success: true, userFound: true };
+      return;
     }
     
-    return { success: false, userFound: false };
+    showToast('Recipient not found. Please check the UPI ID or phone number.', 'error');
+  };
+
+  const handleConfirmPayment = () => {
+    setCurrentView('dashboard');
+    setShowPaymentSuccessModal(true);
+    // In a real app, you'd process the payment here
+  };
+
+  const handlePaymentSuccessDone = () => {
+    setShowPaymentSuccessModal(false);
+    setPaymentDetails(null);
+    showToast('Trust score increased by +1 point!', 'success');
   };
 
   const handleViewPersonHistory = (personName: string) => {
@@ -131,6 +151,8 @@ function App() {
   const handleBackToDashboard = () => {
     setCurrentView('dashboard');
     setSelectedPerson(null);
+    setPaymentDetails(null);
+    setInitialRecipient(undefined);
   };
 
   const handleProfileNavigation = (view: string) => {
@@ -141,18 +163,34 @@ function App() {
     setProfileView('main');
   };
 
+  const handleSendMoneyTo = (upiId: string) => {
+    setInitialRecipient(upiId);
+    setCurrentView('send-money');
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
         switch (currentView) {
           case 'send-money':
-            return <SendMoney onBack={handleBackToDashboard} onSendMoney={handleSendMoney} />;
+            return <SendMoney onBack={handleBackToDashboard} onInitiatePayment={handleInitiatePayment} initialRecipient={initialRecipient} />;
           case 'scan-qr':
-            return <ScanQR onBack={handleBackToDashboard} onSendMoney={async (r, a) => (await handleSendMoney(r, a)).success} />;
+            return <ScanAndPay onBack={handleBackToDashboard} onInitiatePayment={handleInitiatePayment} onPayToUPI={handleSendMoneyTo} />;
           case 'pay-bills':
             return <PayBills onBack={handleBackToDashboard} />;
           case 'person-history':
-            return <PersonTransactionHistory personName={selectedPerson!} onBack={handleBackToDashboard} />;
+            return <PersonTransactionHistory personName={selectedPerson!} onBack={handleBackToDashboard} onSendMoney={handleSendMoneyTo} />;
+          case 'confirm-payment':
+            if (!paymentDetails) return <Dashboard onNavigate={setCurrentView} onViewPersonHistory={handleViewPersonHistory} onNavigateToProfileTab={() => setActiveTab('profile')} />;
+            return <ConfirmPayment 
+              recipient={paymentDetails.recipientName}
+              amount={paymentDetails.amount}
+              onConfirm={handleConfirmPayment}
+              onBack={() => {
+                setCurrentView('dashboard');
+                setPaymentDetails(null);
+              }}
+            />;
           default:
             return <Dashboard 
               onNavigate={setCurrentView}
@@ -177,6 +215,8 @@ function App() {
             return <Notifications onBack={handleBackToProfile} />;
           case 'privacy-security':
             return <PrivacySecurity onBack={handleBackToProfile} />;
+          case 'ai-chatbot':
+            return <AIChatbot onBack={handleBackToProfile} />;
           default:
             return <Profile user={currentUser} onNavigate={handleProfileNavigation} onLogout={handleLogout} />;
         }
@@ -262,11 +302,23 @@ function App() {
           recipient={alertData.recipient}
           trustScore={alertData.trustScore}
           message={alertData.message}
-          onClose={() => setShowAlert(false)}
+          onClose={() => {
+            setShowAlert(false);
+            setPaymentDetails(null);
+          }}
           onProceed={() => {
             setShowAlert(false);
+            setCurrentView('confirm-payment');
             showToast('Transaction proceeded despite warning.', 'info');
           }}
+        />
+      )}
+
+      {showPaymentSuccessModal && paymentDetails && (
+        <PaymentSuccessModal
+          recipient={paymentDetails.recipientName}
+          amount={paymentDetails.amount}
+          onDone={handlePaymentSuccessDone}
         />
       )}
     </div>

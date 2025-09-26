@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Shield, Settings, Bell, Lock, LogOut, ChevronRight } from 'lucide-react';
+import { User, Shield, Settings, Bell, Lock, LogOut, ChevronRight, Bot } from 'lucide-react';
 
 interface User {
   name: string;
@@ -20,6 +20,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onNavigate, onLogout }) => {
     { id: 'account-settings', label: 'Account Settings', icon: Settings },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'privacy-security', label: 'Privacy & Security', icon: Lock },
+    { id: 'ai-chatbot', label: 'AI Assistant', icon: Bot },
   ];
 
   return (
