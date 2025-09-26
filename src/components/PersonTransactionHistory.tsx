@@ -6,9 +6,10 @@ import { supabase } from '../lib/supabase';
 interface PersonTransactionHistoryProps {
   personName: string;
   onBack: () => void;
+  onSendMoney: (upiId: string) => void;
 }
 
-const PersonTransactionHistory: React.FC<PersonTransactionHistoryProps> = ({ personName, onBack }) => {
+const PersonTransactionHistory: React.FC<PersonTransactionHistoryProps> = ({ personName, onBack, onSendMoney }) => {
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<string | null>(null);
   const [personData, setPersonData] = useState<any>(null);
@@ -217,7 +218,7 @@ const PersonTransactionHistory: React.FC<PersonTransactionHistoryProps> = ({ per
             </div>
           </div>
           <div className="flex space-x-2">
-            <button className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors">
+            <button onClick={() => onSendMoney(personData.upi)} className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors">
               <Send className="h-5 w-5" />
             </button>
             <button className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors">

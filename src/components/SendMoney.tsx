@@ -1,25 +1,24 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Send, QrCode, Smartphone, User, CreditCard, AlertTriangle } from 'lucide-react';
-import { useToast } from '../contexts/ToastContext';
-
-interface SendMoneyResult {
-  success: boolean;
-  userFound: boolean;
-  error?: string; // Add optional error message
-}
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Send, Smartphone, User, CreditCard, AlertTriangle } from 'lucide-react';
 
 interface SendMoneyProps {
   onBack: () => void;
-  onSendMoney: (recipient: string, amount: number) => Promise<SendMoneyResult>;
+  onInitiatePayment: (recipient: string, amount: number) => Promise<void>;
+  initialRecipient?: string;
 }
 
-const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'qr' | 'number' | null>(null);
-  const [recipient, setRecipient] = useState('');
+const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onInitiatePayment, initialRecipient }) => {
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'number'>('upi');
+  const [recipient, setRecipient] = useState(initialRecipient || '');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const { showToast } = useToast();
+
+  useEffect(() => {
+    if (initialRecipient) {
+      setRecipient(initialRecipient);
+    }
+  }, [initialRecipient]);
 
   const quickAmounts = [100, 500, 1000, 2000, 5000, 10000];
 
@@ -28,37 +27,19 @@ const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
     if (!recipient || !amount) return;
 
     setIsProcessing(true);
-    
-    const result = await onSendMoney(recipient, parseFloat(amount));
-    
-    if (result.success) {
-      showToast(`₹${amount} sent successfully to ${recipient}`, 'success');
-      setRecipient('');
-      setAmount('');
-      setNote('');
-      onBack();
-    } else if (result.error) {
-      showToast(`Error: ${result.error}`, 'error');
-    } else if (!result.userFound) {
-      showToast('Recipient not found. Please check the UPI ID or phone number.', 'error');
-    }
-    // If the user was found but the transaction was flagged for a low score,
-    // the AlertModal is handled in App.tsx, so no action is needed here.
-    
+    await onInitiatePayment(recipient, parseFloat(amount));
     setIsProcessing(false);
   };
   
   const paymentOptions = [
-    { id: 'upi' as const, label: 'To UPI ID', icon: Send, desc: 'Send money directly using a UPI ID.', color: 'blue' },
+    { id: 'upi' as const, label: 'To UPI ID', icon: User, desc: 'Send money directly using a UPI ID.', color: 'blue' },
     { id: 'number' as const, label: 'To Phone Number', icon: Smartphone, desc: 'Send to any contact using their phone number.', color: 'green' },
-    { id: 'qr' as const, label: 'Scan & Pay', icon: QrCode, desc: 'Scan any UPI QR code to pay.', color: 'purple' }
   ];
 
   const getRecipientPlaceholder = () => {
     switch(paymentMethod) {
       case 'upi': return 'example@paytm';
       case 'number': return '+91 9876543210';
-      case 'qr': return 'Scan QR to fill details';
       default: return 'Select a payment option';
     }
   }
@@ -86,14 +67,7 @@ const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
           {paymentOptions.map(({ id, label, icon: Icon, desc, color }) => (
             <button
               key={id}
-              onClick={() => {
-                if (id === 'qr') {
-                  showToast("Use 'Scan QR' from the dashboard.", 'info');
-                  setPaymentMethod(null);
-                } else {
-                  setPaymentMethod(id);
-                }
-              }}
+              onClick={() => setPaymentMethod(id)}
               className={`w-full p-4 rounded-xl border-2 flex items-center space-x-4 transition-all text-left ${
                 paymentMethod === id
                   ? 'border-blue-500 bg-blue-50'
@@ -102,13 +76,11 @@ const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
             >
               <div className={`p-3 rounded-lg 
                 ${color === 'blue' && 'bg-blue-100'} 
-                ${color === 'green' && 'bg-green-100'} 
-                ${color === 'purple' && 'bg-purple-100'}`
+                ${color === 'green' && 'bg-green-100'}`
               }>
                 <Icon className={`h-6 w-6 
                   ${color === 'blue' && 'text-blue-600'} 
-                  ${color === 'green' && 'text-green-600'} 
-                  ${color === 'purple' && 'text-purple-600'}`
+                  ${color === 'green' && 'text-green-600'}`
                 } />
               </div>
               <div>
@@ -120,8 +92,8 @@ const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
         </div>
       </div>
       
-      {/* Send Money Form - shown only when a method is selected */}
-      {paymentMethod && paymentMethod !== 'qr' && (
+      {/* Send Money Form */}
+      {paymentMethod && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <form onSubmit={handleSend} className="space-y-6">
             <div>
@@ -190,14 +162,13 @@ const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
               />
             </div>
 
-            {/* Security Notice */}
             <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
               <div className="flex items-start space-x-3">
                 <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-yellow-800">Security Reminder</p>
                   <p className="text-sm text-yellow-700 mt-1">
-                    Double-check recipient details. You have 24 hours to request a refund if sent to wrong person.
+                    Double-check recipient details. Transactions are reviewed for security.
                   </p>
                 </div>
               </div>
@@ -211,12 +182,12 @@ const SendMoney: React.FC<SendMoneyProps> = ({ onBack, onSendMoney }) => {
               {isProcessing ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Processing...</span>
+                  <span>Verifying...</span>
                 </>
               ) : (
                 <>
                   <Send className="h-5 w-5" />
-                  <span>Send ₹{amount || '0'}</span>
+                  <span>Proceed to Pay</span>
                 </>
               )}
             </button>
