@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { AlertTriangle, User, Calendar, FileText, Send, Shield, Search, Phone, MapPin, CreditCard, Clock, X, Paperclip, UploadCloud, UserCheck, ShieldAlert, Eye } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { AlertTriangle, User, Calendar, FileText, Send, Shield, Search, Phone, MapPin, CreditCard, Clock, X, Paperclip, UploadCloud, UserCheck, ShieldAlert, Eye, Mic } from 'lucide-react';
+import { useToast } from '../contexts/ToastContext';
 
 type Report = {
   id: string;
@@ -42,6 +43,62 @@ const ReportUser = () => {
   });
   const [isDragging, setIsDragging] = useState(false);
   const [viewingReport, setViewingReport] = useState<Report | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const { showToast } = useToast();
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn('Speech recognition not supported in this browser.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-IN';
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setReportForm(prev => ({
+        ...prev,
+        description: prev.description ? `${prev.description} ${transcript}`.trim() : transcript,
+      }));
+      showToast('Text added from your speech.', 'success');
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+      showToast(`Speech recognition error: ${event.error}`, 'error');
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+  }, [showToast]);
+
+  const handleToggleListening = () => {
+    if (!recognitionRef.current) {
+      showToast('Speech recognition is not supported in your browser.', 'error');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch (error) {
+        console.error("Could not start recognition:", error);
+        showToast('Could not start speech recognition. Please check microphone permissions.', 'error');
+      }
+    }
+  };
 
   const [previousReports, setPreviousReports] = useState<Report[]>([
     { id: 'RPT001', reportedUser: 'John Doe (john.doe@paytm)', category: 'Money Not Returned', amount: 5000, status: 'Under Review', date: '2024-01-14', description: 'Borrowed money for emergency but not returning calls' },
@@ -131,7 +188,6 @@ const ReportUser = () => {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">File a New Report</h2>
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* User Info, Transaction Details, Report Details sections remain the same */}
           <div className="space-y-6">
             <h4 className="font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center space-x-2">
               <UserCheck className="h-5 w-5 text-blue-600" />
@@ -187,8 +243,43 @@ const ReportUser = () => {
                 </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Detailed Description *</label>
-              <textarea value={reportForm.description} onChange={(e) => setReportForm({...reportForm, description: e.target.value})} placeholder="Please provide detailed information about the issue..." rows={5} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+              <div className="flex justify-between items-center mb-2">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                  Detailed Description *
+                </label>
+                <button
+                  type="button"
+                  onClick={handleToggleListening}
+                  className={`flex items-center space-x-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isListening
+                      ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                  }`}
+                  title={isListening ? 'Stop recording' : 'Start recording with microphone'}
+                  disabled={!recognitionRef.current}
+                >
+                  {isListening ? (
+                    <>
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                      <span>Listening...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="h-4 w-4" />
+                      <span>Speak</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <textarea
+                id="description"
+                value={reportForm.description}
+                onChange={(e) => setReportForm({ ...reportForm, description: e.target.value })}
+                placeholder="Please provide detailed information about the issue, or use the 'Speak' button to dictate."
+                rows={5}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
             </div>
           </div>
 

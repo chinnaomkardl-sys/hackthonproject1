@@ -41,7 +41,7 @@ function App() {
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
   const { showToast } = useToast();
 
-  const [paymentDetails, setPaymentDetails] = useState<{ recipient: string; amount: number; recipientName: string } | null>(null);
+  const [paymentDetails, setPaymentDetails] = useState<{ recipient: string; amount: number; recipientName: string; transactionId?: string; transactionDate?: string; } | null>(null);
   const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false);
   const [initialRecipient, setInitialRecipient] = useState<string | undefined>(undefined);
 
@@ -132,6 +132,11 @@ function App() {
   };
 
   const handleConfirmPayment = () => {
+    const transactionId = `TXN${Date.now()}`.slice(0, 12);
+    const transactionDate = new Date().toISOString();
+    
+    setPaymentDetails(prev => prev ? { ...prev, transactionId, transactionDate } : null);
+    
     setCurrentView('dashboard');
     setShowPaymentSuccessModal(true);
     // In a real app, you'd process the payment here
@@ -309,10 +314,12 @@ function App() {
         />
       )}
 
-      {showPaymentSuccessModal && paymentDetails && (
+      {showPaymentSuccessModal && paymentDetails && paymentDetails.transactionId && paymentDetails.transactionDate && (
         <PaymentSuccessModal
           recipient={paymentDetails.recipientName}
           amount={paymentDetails.amount}
+          transactionId={paymentDetails.transactionId}
+          transactionDate={paymentDetails.transactionDate}
           onDone={handlePaymentSuccessDone}
         />
       )}
