@@ -7,7 +7,7 @@ import UserScore from './components/UserScore';
 import ReportUser from './components/ReportUser';
 import AlertModal from './components/AlertModal';
 import SendMoney from './components/SendMoney';
-import ScanAndPay from './components/ScanAndPay';
+import ScanQR from './components/ScanQR';
 import PayBills from './components/PayBills';
 import PersonTransactionHistory from './components/PersonTransactionHistory';
 import Profile from './components/Profile';
@@ -163,11 +163,6 @@ function App() {
     setProfileView('main');
   };
 
-  const handleSendMoneyTo = (upiId: string) => {
-    setInitialRecipient(upiId);
-    setCurrentView('send-money');
-  };
-
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
@@ -175,11 +170,11 @@ function App() {
           case 'send-money':
             return <SendMoney onBack={handleBackToDashboard} onInitiatePayment={handleInitiatePayment} initialRecipient={initialRecipient} />;
           case 'scan-qr':
-            return <ScanAndPay onBack={handleBackToDashboard} onInitiatePayment={handleInitiatePayment} onPayToUPI={handleSendMoneyTo} />;
+            return <ScanQR onBack={handleBackToDashboard} onInitiatePayment={handleInitiatePayment} />;
           case 'pay-bills':
             return <PayBills onBack={handleBackToDashboard} />;
           case 'person-history':
-            return <PersonTransactionHistory personName={selectedPerson!} onBack={handleBackToDashboard} onSendMoney={handleSendMoneyTo} />;
+            return <PersonTransactionHistory personName={selectedPerson!} onBack={handleBackToDashboard} onSendMoney={(upiId) => { setInitialRecipient(upiId); setCurrentView('send-money'); }} />;
           case 'confirm-payment':
             if (!paymentDetails) return <Dashboard onNavigate={setCurrentView} onViewPersonHistory={handleViewPersonHistory} onNavigateToProfileTab={() => setActiveTab('profile')} />;
             return <ConfirmPayment 

@@ -43,7 +43,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin, onRegister }) => {
           </div>
         </div>
         <p className="text-center text-xs text-gray-500 mt-4">
-            Note: Supabase is not connected. User registration is for demo purposes and data will not be saved.
+            Note: This login screen is for demonstration purposes and uses mock credentials. It is not connected to Supabase authentication.
         </p>
       </div>
     </div>

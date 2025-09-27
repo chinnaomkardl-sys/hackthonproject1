@@ -1,15 +1,16 @@
 import React, { useState, useRef } from 'react';
-import { ArrowLeft, QrCode, Camera, Upload, Flashlight, RotateCcw } from 'lucide-react';
+import { ArrowLeft, QrCode, Camera, Upload, RotateCcw, Loader2 } from 'lucide-react';
 import { knownUsers } from '../data/knownUsers';
 
 interface ScanQRProps {
   onBack: () => void;
-  onSendMoney: (recipient: string, amount: number) => boolean;
+  onInitiatePayment: (recipient: string, amount: number) => Promise<void>;
 }
 
-const ScanQR: React.FC<ScanQRProps> = ({ onBack, onSendMoney }) => {
+const ScanQR: React.FC<ScanQRProps> = ({ onBack, onInitiatePayment }) => {
   const [isScanning, setIsScanning] = useState(false);
-  const [scannedData, setScannedData] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [scannedData, setScannedData] = useState<{ name: string; upi: string } | null>(null);
   const [amount, setAmount] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -21,7 +22,6 @@ const ScanQR: React.FC<ScanQRProps> = ({ onBack, onSendMoney }) => {
         setScannedData({
           name: scannedUser.user_name,
           upi: scannedUser.upi_ids[0],
-          amount: '' // Let user enter amount
         });
       }
       setIsScanning(false);
@@ -38,7 +38,6 @@ const ScanQR: React.FC<ScanQRProps> = ({ onBack, onSendMoney }) => {
           setScannedData({
             name: scannedUser.user_name,
             upi: scannedUser.upi_ids[0],
-            amount: ''
           });
         }
         setIsScanning(false);
@@ -46,13 +45,12 @@ const ScanQR: React.FC<ScanQRProps> = ({ onBack, onSendMoney }) => {
     }
   };
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (!scannedData || !amount) return;
     
-    const success = onSendMoney(scannedData.upi, parseFloat(amount));
-    if (success) {
-      onBack();
-    }
+    setIsProcessing(true);
+    await onInitiatePayment(scannedData.upi, parseFloat(amount));
+    setIsProcessing(false);
   };
 
   const resetScan = () => {
@@ -133,8 +131,8 @@ const ScanQR: React.FC<ScanQRProps> = ({ onBack, onSendMoney }) => {
                   <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
                 </div>
               </div>
-              <button onClick={handlePayment} disabled={!amount} className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors">
-                Pay ₹{amount || '0'}
+              <button onClick={handlePayment} disabled={!amount || isProcessing} className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors flex items-center justify-center">
+                {isProcessing ? <Loader2 className="animate-spin h-5 w-5" /> : `Pay ₹${amount || '0'}`}
               </button>
             </div>
           </div>
